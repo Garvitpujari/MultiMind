@@ -1,0 +1,17 @@
+
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+requests
+
+langgraph
+langchain-core
+langchain-groq
+langchain-community
+langchain-mcp-adapters
+
+langgraph-checkpoint-postgres
+psycopg[binary,pool]
+
+duckduckgo-search
