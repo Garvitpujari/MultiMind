@@ -32,6 +32,50 @@ from starlette.concurrency import run_in_threadpool
 
 load_dotenv()
 
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+
+def get_authenticated_user(authorization: str | None):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Please log in.")
+
+    token = authorization.split(" ", 1)[1]
+
+    response = requests.get(
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={
+            "apikey": SUPABASE_SECRET_KEY,
+            "Authorization": f"Bearer {token}",
+        },
+        timeout=10,
+    )
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    return response.json()["id"]
+
+
+def save_user_chat(user_id: str, thread_id: str, title: str):
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/user_chats",
+        headers={
+            "apikey": SUPABASE_SECRET_KEY,
+            "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates",
+        },
+        json={
+            "user_id": user_id,
+            "thread_id": thread_id,
+            "title": title[:100],
+        },
+        timeout=10,
+    )
+    response.raise_for_status()
+
 RAG_COLLECTION = "multimind_documents_jina_768"
 _embeddings = None
 _vector_store = None
@@ -503,3 +547,60 @@ async def get_threads(request: Request):
     except Exception as exc:
         print(f"[THREADS ERROR] {type(exc).__name__}: {exc}", flush=True)
         raise HTTPException(status_code=500, detail="Unable to retrieve conversations.") from exc
+
+
+@app.get("/threads/{thread_id}")
+async def get_thread(thread_id: str, request: Request):
+    try:
+        config = {
+            "configurable": {
+                "thread_id": thread_id
+            }
+        }
+
+        state = await request.app.state.chatbot.aget_state(config)
+
+        if not state or not state.values:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found."
+            )
+
+        messages = []
+
+        for index, message in enumerate(
+            state.values.get("messages", [])
+        ):
+            if message.type not in ("human", "ai"):
+                continue
+
+            content = message.content
+
+            if not isinstance(content, str):
+                content = str(content)
+
+            messages.append({
+                "id": message.id or f"{thread_id}-{index}",
+                "role": (
+                    "user" if message.type == "human"
+                    else "assistant"
+                ),
+                "content": content
+            })
+
+        return {
+            "thread_id": thread_id,
+            "messages": messages
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print(
+            f"[THREAD ERROR] {type(exc).__name__}: {exc}",
+            flush=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to retrieve conversation."
+        ) from exc
