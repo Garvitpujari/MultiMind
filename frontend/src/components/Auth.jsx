@@ -1,4 +1,4 @@
-
+import './Auth.css'
 import { useState } from 'react'
 import { supabase } from '../library/supabase'
 
