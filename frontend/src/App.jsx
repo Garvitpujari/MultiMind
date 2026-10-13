@@ -188,7 +188,7 @@ useEffect(() => {
               className="icon-button account-menu-button"
               type="button"
               aria-label="Account options"
-              onClick={() => window.dispatchEvent(new Event('multimind:open-auth'))}
+              onClick={() => setShowAuth(true)}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="5" cy="12" r="1" />

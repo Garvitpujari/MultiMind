@@ -49,7 +49,7 @@ function Auth() {
   }
 
   return (
-    <main className="auth-page">
+    <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
         <h1>MultiMind</h1>
         <p>{isLogin ? 'Welcome back' : 'Create your account'}</p>
@@ -99,7 +99,7 @@ function Auth() {
             : 'Already have an account? Log in'}
         </button>
       </form>
-    </main>
+    </div>
   )
 }
 

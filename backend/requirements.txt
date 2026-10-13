@@ -15,3 +15,9 @@ langgraph-checkpoint-postgres
 psycopg[binary,pool]
 
 duckduckgo-search
+
+langchain-postgres
+langchain-huggingface
+sentence-transformers
+pypdf
+python-multipart
