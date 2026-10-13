@@ -19,7 +19,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import BaseTool, tool
 from langchain_groq import ChatGroq
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -45,15 +45,32 @@ def normalize_database_url(url: str) -> str:
     return url
 
 
+
+
 def get_embeddings():
+    """Use hosted Hugging Face embeddings instead of loading a local model."""
     global _embeddings
+
     if _embeddings is None:
-        print("[RAG] Loading embedding model...", flush=True)
-        _embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        hf_token = os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
+
+        if not hf_token:
+            raise RuntimeError(
+                "HUGGINGFACEHUB_ACCESS_TOKEN is missing from the environment."
+            )
+
+        print("[RAG] Initializing hosted Hugging Face embeddings...", flush=True)
+
+        _embeddings = HuggingFaceEndpointEmbeddings(
+            model="sentence-transformers/all-MiniLM-L6-v2",
+            task="feature-extraction",
+            huggingfacehub_api_token=hf_token,
         )
-        print("[RAG] Embedding model loaded.", flush=True)
+
+        print("[RAG] Hosted Hugging Face embeddings initialized.", flush=True)
+
     return _embeddings
+
 
 
 def get_vector_store():
