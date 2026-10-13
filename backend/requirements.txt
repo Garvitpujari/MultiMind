@@ -21,3 +21,5 @@ langchain-huggingface
 sentence-transformers
 pypdf
 python-multipart
+
+ddgs
