@@ -3,6 +3,13 @@ import './App.css'
 import Auth from './components/Auth'
 import { supabase } from './library/supabase'
 
+
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://multimind-x5eq.onrender.com'
+
+
 function App() {
 
 const [session, setSession] = useState(null)
@@ -56,13 +63,18 @@ useEffect(() => {
   }
 
   function handleFileSelect(event) {
-    const selectedFiles = Array.from(event.target.files ?? [])
+  const selectedFiles = Array.from(event.target.files ?? [])
+  const pdfFiles = selectedFiles.filter((file) =>
+    file.name.toLowerCase().endsWith('.pdf')
+  )
 
-    setAttachments((current) => [...current, ...selectedFiles])
-
-    // Allow selecting the same file again after removing it.
-    event.target.value = ''
+  if (pdfFiles.length !== selectedFiles.length) {
+    alert('Only PDF files are supported currently.')
   }
+
+  setAttachments((current) => [...current, ...pdfFiles])
+  event.target.value = ''
+}
 
   function removeAttachment(index) {
     setAttachments((current) =>
@@ -70,23 +82,137 @@ useEffect(() => {
     )
   }
 
-  function handleSubmit(event) { // prevent browser from reloading page on form submission
-    event.preventDefault()
+  async function handleSubmit(event) {
+     event.preventDefault()
 
-    const text = input.trim()
+  const text = input.trim()
 
-    if ((!text && attachments.length === 0) || isLoading) {
-      return
+  if ((!text && attachments.length === 0) || isLoading) {
+    return
+  }
+
+  const threadId = activeChatId || crypto.randomUUID()
+  const filesToUpload = [...attachments]
+
+  const userMessage =
+    text ||
+    `Please summarize and analyze the uploaded PDF${
+      filesToUpload.length > 1 ? 's' : ''
+    }.`
+
+  const userEntry = {
+    id: crypto.randomUUID(),
+    role: 'user',
+    content: userMessage,
+    files: filesToUpload.map((file) => file.name),
+  }
+
+  setActiveChatId(threadId)
+  setMessages((current) => [...current, userEntry])
+  setInput('')
+  setAttachments([])
+  setIsLoading(true)
+
+  try {
+    // 1. Upload each selected PDF to the backend.
+    for (const file of filesToUpload) {
+      const formData = new FormData()
+
+      formData.append('thread_id', threadId)
+      formData.append('file', file)
+
+      const uploadResponse = await fetch(
+        `${API_BASE_URL}/upload-pdf`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse
+          .json()
+          .catch(() => ({}))
+
+        throw new Error(
+          errorData.detail || `Failed to upload ${file.name}`
+        )
+      }
     }
 
-    // The API request will be connected after authentication is implemented.
-    // Do not create a fake assistant response or pretend a message was sent.
-    console.info('Ready to connect to the MultiMind API.', {
-      threadId: activeChatId,
-      message: text,
-      files: attachments.map((file) => file.name),
+    // 2. Send the message to the AI backend.
+    const response = await fetch(`${API_BASE_URL}/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: userMessage,
+        thread_id: threadId,
+      }),
     })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        data.detail || 'The chat request failed.'
+      )
+    }
+
+    // 3. Display the AI's response.
+    const assistantMessage = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: data.response,
+    }
+
+    setMessages((current) => [
+      ...current,
+      assistantMessage,
+    ])
+
+    // 4. Save the conversation in the sidebar state.
+    setChats((current) => {
+      const existingChat = current.find(
+        (chat) => chat.id === threadId
+      )
+
+      const updatedChat = {
+        id: threadId,
+        title: userMessage.slice(0, 45) || 'New conversation',
+        messages: [
+          ...(existingChat?.messages ?? []),
+          userEntry,
+          assistantMessage,
+        ],
+      }
+
+      return existingChat
+        ? current.map((chat) =>
+            chat.id === threadId ? updatedChat : chat
+          )
+        : [updatedChat, ...current]
+    })
+  } catch (error) {
+    console.error('MultiMind request failed:', error)
+
+    setMessages((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: `Request failed: ${error.message}. Please try again.`,
+      },
+    ])
+  } finally {
+    setIsLoading(false)
   }
+  }
+
+  
+
+
 
 
 
@@ -419,7 +545,7 @@ useEffect(() => {
                   type="file"
                   multiple
                   hidden
-                  accept=".pdf,.txt,.md,.csv,.doc,.docx,.json,.py,.js,.jsx,.ts,.tsx"
+                  accept=".pdf,application/pdf"
                   onChange={handleFileSelect}
                 />
 
