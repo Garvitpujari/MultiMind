@@ -19,7 +19,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import BaseTool, tool
 from langchain_groq import ChatGroq
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_core.embeddings import Embeddings
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -32,7 +32,7 @@ from starlette.concurrency import run_in_threadpool
 
 load_dotenv()
 
-RAG_COLLECTION = "multimind_documents"
+RAG_COLLECTION = "multimind_documents_jina_768"
 _embeddings = None
 _vector_store = None
 
@@ -47,29 +47,61 @@ def normalize_database_url(url: str) -> str:
 
 
 
+class JinaEmbeddings(Embeddings):
+    """Generate embeddings using Jina's hosted API."""
+
+    def __init__(self):
+        self.api_key = os.getenv("JINA_API_KEY")
+        self.model = "jina-embeddings-v2-base-en"
+        self.api_url = "https://api.jina.ai/v1/embeddings"
+
+        if not self.api_key:
+            raise RuntimeError("JINA_API_KEY is missing from the environment.")
+
+    def _embed(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+
+        response = requests.post(
+            self.api_url,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": self.model,
+                "input": texts,
+            },
+            timeout=60,
+        )
+        response.raise_for_status()
+
+        data = response.json()["data"]
+        data.sort(key=lambda item: item["index"])
+        return [item["embedding"] for item in data]
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        # Small batches limit request size and memory usage.
+        embeddings = []
+        for start in range(0, len(texts), 16):
+            embeddings.extend(self._embed(texts[start:start + 16]))
+        return embeddings
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._embed([text])[0]
+
+
 def get_embeddings():
-    """Use hosted Hugging Face embeddings instead of loading a local model."""
+    """Initialize the API client without loading a local ML model."""
     global _embeddings
 
     if _embeddings is None:
-        hf_token = os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
-
-        if not hf_token:
-            raise RuntimeError(
-                "HUGGINGFACEHUB_ACCESS_TOKEN is missing from the environment."
-            )
-
-        print("[RAG] Initializing hosted Hugging Face embeddings...", flush=True)
-
-        _embeddings = HuggingFaceEndpointEmbeddings(
-            model="sentence-transformers/all-MiniLM-L6-v2",
-            task="feature-extraction",
-            huggingfacehub_api_token=hf_token,
-        )
-
-        print("[RAG] Hosted Hugging Face embeddings initialized.", flush=True)
+        print("[RAG] Initializing Jina hosted embeddings...", flush=True)
+        _embeddings = JinaEmbeddings()
+        print("[RAG] Jina embedding client initialized.", flush=True)
 
     return _embeddings
+
 
 
 
