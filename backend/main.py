@@ -286,18 +286,75 @@ class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
 
+
 async def chat_node(state: ChatState, config: RunnableConfig):
-    system_message = SystemMessage(content=(
-        "You are MultiMind, a helpful AI assistant. For questions about PDFs uploaded "
-        "to the current conversation, use rag_tool and base your answer on its retrieved "
-        "context. If no PDF is available, ask the user to upload one. Do not invent "
-        "document facts. Use web search for current external information when appropriate, "
-        "and use other tools when useful."
-    ))
-    response = await llm_with_tools.ainvoke(
-        [system_message, *state["messages"]], config=config
+    thread_id = config.get("configurable", {}).get("thread_id", "")
+    user_message = state["messages"][-1].content
+
+    # Retrieve PDF context deterministically for this conversation.
+    pdf_context = ""
+
+    try:
+        if thread_id and isinstance(user_message, str):
+            print(
+                f"[RAG] Searching documents for thread={thread_id}",
+                flush=True,
+            )
+
+            results = await run_in_threadpool(
+                lambda: get_vector_store().similarity_search(
+                    user_message,
+                    k=4,
+                    filter={"thread_id": str(thread_id)},
+                )
+            )
+
+            print(f"[RAG] Retrieved {len(results)} chunks", flush=True)
+
+            if results:
+                pdf_context = "\n\n".join(
+                    f"Source: {doc.metadata.get('filename', 'PDF')}\n"
+                    f"Page: {doc.metadata.get('page', 'Unknown')}\n"
+                    f"{doc.page_content}"
+                    for doc in results
+                )
+
+    except Exception as exc:
+        print(
+            f"[RAG ERROR] {type(exc).__name__}: {exc}",
+            flush=True,
+        )
+
+    system_prompt = (
+        "You are MultiMind, a helpful AI assistant. "
+        "Use retrieved PDF context when it is relevant to the user's question. "
+        "For PDF summaries, summarize the available retrieved passages and "
+        "be transparent if they do not cover the whole document. "
+        "Never invent document facts. Use tools for other tasks when appropriate."
     )
+
+    if pdf_context:
+        system_prompt += (
+            "\n\nRetrieved PDF context for this conversation:\n"
+            f"{pdf_context}\n\n"
+            "Answer questions about the uploaded PDF using this context."
+        )
+    else:
+        system_prompt += (
+            "\n\nNo matching PDF passages were retrieved for this message. "
+            "Do not claim that a PDF was retrieved."
+        )
+
+    response = await llm_with_tools.ainvoke(
+        [
+            SystemMessage(content=system_prompt),
+            *state["messages"],
+        ],
+        config=config,
+    )
+
     return {"messages": [response]}
+
 
 
 graph = StateGraph(ChatState)
