@@ -806,122 +806,352 @@ async function loadChatHistory(currentSession) {
       current.filter((_, currentIndex) => currentIndex !== index),
     )
   }
-  async function handleSubmit(event) {
-     event.preventDefault()
+//   async function handleSubmit(event) {
+//      event.preventDefault()
+//   if (!session?.access_token) {
+//     setShowAuth(true)
+//     return
+//   }
+//   const text = input.trim()
+//   if ((!text && attachments.length === 0) || isLoading) {
+//     return
+//   }
+//   const threadId = activeChatId || crypto.randomUUID()
+//   const filesToUpload = [...attachments]
+//   const userMessage =
+//     text ||
+//     `Please summarize and analyze the uploaded PDF${
+//       filesToUpload.length > 1 ? 's' : ''
+//     }.`
+//   const userEntry = {
+//     id: crypto.randomUUID(),
+//     role: 'user',
+//     content: userMessage,
+//     files: filesToUpload.map((file) => file.name),
+//   }
+//   setActiveChatId(threadId)
+//   setMessages((current) => [...current, userEntry])
+//   setInput('')
+//   setAttachments([])
+//   setIsLoading(true)
+//   try {
+//     // 1. Upload each selected PDF to the backend.
+//     for (const file of filesToUpload) {
+//       const formData = new FormData()
+//       formData.append('thread_id', threadId)
+//       formData.append('file', file)
+//       const uploadResponse = await fetch(
+//         `${API_BASE_URL}/upload-pdf`,
+//         {
+//           method: 'POST',
+//           headers: {
+//             Authorization: `Bearer ${session.access_token}`,
+//           },
+//           body: formData,
+//         }
+//       )
+//       if (!uploadResponse.ok) {
+//         const errorData = await uploadResponse
+//           .json()
+//           .catch(() => ({}))
+//         throw new Error(
+//           errorData.detail || `Failed to upload ${file.name}`
+//         )
+//       }
+//     }
+//     // 2. Send the message to the AI backend.
+//     const response = await fetch(`${API_BASE_URL}/chat`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       Authorization: `Bearer ${session.access_token}`,
+//       },
+//       body: JSON.stringify({
+//         message: userMessage,
+//         thread_id: threadId,
+//       }),
+//     })
+//     const data = await response.json()
+//     if (!response.ok) {
+//       throw new Error(
+//         data.detail || 'The chat request failed.'
+//       )
+//     }
+//     // 3. Display the AI's response.
+//     const assistantMessage = {
+//       id: crypto.randomUUID(),
+//       role: 'assistant',
+//       content: data.response,
+//     }
+//     setMessages((current) => [
+//       ...current,
+//       assistantMessage,
+//     ])
+//     // 4. Save the conversation in the sidebar state.
+//     setChats((current) => {
+//       const existingChat = current.find(
+//         (chat) => chat.id === threadId
+//       )
+//       const updatedChat = {
+//         id: threadId,
+//         title: userMessage.slice(0, 45) || 'New conversation',
+//         messages: [
+//           ...(existingChat?.messages ?? []),
+//           userEntry,
+//           assistantMessage,
+//         ],
+//       }
+//       return existingChat
+//         ? current.map((chat) =>
+//             chat.id === threadId ? updatedChat : chat
+//           )
+//         : [updatedChat, ...current]
+//     })
+//   } catch (error) {
+//     console.error('MultiMind request failed:', error)
+//     setMessages((current) => [
+//       ...current,
+//       {
+//         id: crypto.randomUUID(),
+//         role: 'assistant',
+//         content: `Request failed: ${error.message}. Please try again.`,
+//       },
+//     ])
+//   } finally {
+//     setIsLoading(false)
+//   }
+//   }
+
+
+async function handleSubmit(event) {
+  event.preventDefault()
+
   if (!session?.access_token) {
     setShowAuth(true)
     return
   }
-  const text = input.trim()
-  if ((!text && attachments.length === 0) || isLoading) {
-    return
-  }
-  const threadId = activeChatId || crypto.randomUUID()
-  const filesToUpload = [...attachments]
-  const userMessage =
-    text ||
-    `Please summarize and analyze the uploaded PDF${
-      filesToUpload.length > 1 ? 's' : ''
-    }.`
-  const userEntry = {
-    id: crypto.randomUUID(),
-    role: 'user',
-    content: userMessage,
-    files: filesToUpload.map((file) => file.name),
-  }
-  setActiveChatId(threadId)
-  setMessages((current) => [...current, userEntry])
-  setInput('')
-  setAttachments([])
-  setIsLoading(true)
-  try {
-    // 1. Upload each selected PDF to the backend.
-    for (const file of filesToUpload) {
-      const formData = new FormData()
-      formData.append('thread_id', threadId)
-      formData.append('file', file)
-      const uploadResponse = await fetch(
-        `${API_BASE_URL}/upload-pdf`,
-        {
-          method: 'POST',
-          headers: {
+
+  const text = input.trim()
+
+  if ((!text && attachments.length === 0) || isLoading) {
+    return
+  }
+
+  const threadId = activeChatId || crypto.randomUUID()
+  const filesToUpload = [...attachments]
+
+  const userMessage =
+    text ||
+    `Please summarize and analyze the uploaded PDF${
+      filesToUpload.length > 1 ? 's' : ''
+    }.`
+
+  const userEntry = {
+    id: crypto.randomUUID(),
+    role: 'user',
+    content: userMessage,
+    files: filesToUpload.map((file) => file.name),
+  }
+
+  setActiveChatId(threadId)
+  setMessages((current) => [...current, userEntry])
+  setInput('')
+  setAttachments([])
+  setIsLoading(true)
+
+  let assistantMessageId = null
+  let fullResponse = ''
+
+  try {
+    // 1. Upload selected PDFs (if any).
+    for (const file of filesToUpload) {
+      const formData = new FormData()
+      formData.append('thread_id', threadId)
+      formData.append('file', file)
+
+      const uploadResponse = await fetch(
+        `${API_BASE_URL}/upload-pdf`,
+        {
+          method: 'POST',
+          headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: formData,
-        }
-      )
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse
-          .json()
-          .catch(() => ({}))
-        throw new Error(
-          errorData.detail || `Failed to upload ${file.name}`
-        )
-      }
-    }
-    // 2. Send the message to the AI backend.
-    const response = await fetch(`${API_BASE_URL}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.access_token}`,
+        }
+      )
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse
+          .json()
+          .catch(() => ({}))
+
+        throw new Error(
+          errorData.detail || `Failed to upload ${file.name}`
+        )
+      }
+    }
+
+    // 2. Send the message to the streaming backend.
+    const response = await fetch(`${API_BASE_URL}/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({
-        message: userMessage,
-        thread_id: threadId,
-      }),
-    })
-    const data = await response.json()
-    if (!response.ok) {
-      throw new Error(
-        data.detail || 'The chat request failed.'
-      )
-    }
-    // 3. Display the AI's response.
-    const assistantMessage = {
-      id: crypto.randomUUID(),
-      role: 'assistant',
-      content: data.response,
-    }
-    setMessages((current) => [
-      ...current,
-      assistantMessage,
-    ])
-    // 4. Save the conversation in the sidebar state.
-    setChats((current) => {
-      const existingChat = current.find(
-        (chat) => chat.id === threadId
-      )
-      const updatedChat = {
-        id: threadId,
-        title: userMessage.slice(0, 45) || 'New conversation',
-        messages: [
-          ...(existingChat?.messages ?? []),
-          userEntry,
-          assistantMessage,
-        ],
-      }
-      return existingChat
-        ? current.map((chat) =>
-            chat.id === threadId ? updatedChat : chat
-          )
-        : [updatedChat, ...current]
-    })
-  } catch (error) {
-    console.error('MultiMind request failed:', error)
-    setMessages((current) => [
-      ...current,
-      {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: `Request failed: ${error.message}. Please try again.`,
-      },
-    ])
-  } finally {
-    setIsLoading(false)
-  }
-  }
+      body: JSON.stringify({
+        message: userMessage,
+        thread_id: threadId,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        errorData.detail || 'The chat request failed.'
+      )
+    }
+
+    if (!response.body) {
+      throw new Error('The server did not provide a response stream.')
+    }
+
+    // 3. Create an empty assistant message for live updates.
+    assistantMessageId = crypto.randomUUID()
+
+    setMessages((current) => [
+      ...current,
+      {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+      },
+    ])
+
+    // 4. Read and parse the server-sent events.
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let streamFinished = false
+
+    const processEvent = (eventText) => {
+      const dataLine = eventText
+        .split('\n')
+        .find((line) => line.startsWith('data: '))
+
+      if (!dataLine) return
+
+      let eventData
+
+      try {
+        eventData = JSON.parse(dataLine.slice(6))
+      } catch {
+        return
+      }
+
+      if (eventData.type === 'token') {
+        fullResponse += eventData.content || ''
+
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === assistantMessageId
+              ? { ...message, content: fullResponse }
+              : message
+          )
+        )
+      } else if (eventData.type === 'done') {
+        streamFinished = true
+      } else if (eventData.type === 'error') {
+        throw new Error(
+          eventData.content || 'The chat request failed.'
+        )
+      }
+    }
+
+    while (true) {
+      const { value, done } = await reader.read()
+
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+
+      const events = buffer.split('\n\n')
+      buffer = events.pop() || ''
+
+      for (const eventText of events) {
+        processEvent(eventText)
+      }
+    }
+
+    // Process any final buffered data.
+    buffer += decoder.decode()
+
+    if (buffer.trim()) {
+      processEvent(buffer)
+    }
+
+    if (!streamFinished) {
+      throw new Error('The response stream ended unexpectedly.')
+    }
+
+    if (!fullResponse.trim()) {
+      throw new Error('The assistant returned an empty response.')
+    }
+
+    // 5. Save the completed conversation in the sidebar.
+    const assistantMessage = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: fullResponse,
+    }
+
+    setChats((current) => {
+      const existingChat = current.find(
+        (chat) => chat.id === threadId
+      )
+
+      const updatedChat = {
+        id: threadId,
+        title: userMessage.slice(0, 45) || 'New conversation',
+        messages: [
+          ...(existingChat?.messages ?? []),
+          userEntry,
+          assistantMessage,
+        ],
+      }
+
+      return existingChat
+        ? current.map((chat) =>
+            chat.id === threadId ? updatedChat : chat
+          )
+        : [updatedChat, ...current]
+    })
+  } catch (error) {
+    console.error('MultiMind request failed:', error)
+
+    // Remove an incomplete assistant response if streaming failed.
+    if (assistantMessageId) {
+      setMessages((current) =>
+        current.filter(
+          (message) => message.id !== assistantMessageId
+        )
+      )
+    }
+
+    setMessages((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: `Request failed: ${error.message}. Please try again.`,
+      },
+    ])
+  } finally {
+    setIsLoading(false)
+  }
+}
+
   return (
+
     <div className="app-shell">
       {sidebarOpen && (
         <aside className="sidebar">
