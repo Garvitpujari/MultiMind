@@ -1,149 +1,939 @@
+// // import { useEffect, useRef, useState } from 'react'
+// // import './App.css'
+// // import Auth from './components/Auth'
+// // import { supabase } from './library/supabase'
+
+
+
+// // const API_BASE_URL =
+// //   import.meta.env.VITE_API_BASE_URL ||
+// //   'https://multimind-x5eq.onrender.com'
+
+
+// // function App() {
+
+// // const [session, setSession] = useState(null)
+// // const [authLoading, setAuthLoading] = useState(true)
+// //  const [showAuth, setShowAuth] = useState(false)
+
+// // useEffect(() => {
+// //   supabase.auth.getSession().then(({ data, error }) => {
+// //     if (error) {
+// //       console.error('Could not retrieve session:', error.message)
+// //     }
+
+// //     setSession(data?.session ?? null)
+// //     setAuthLoading(false)
+// //   })
+
+// //   const {
+// //     data: { subscription },
+// //   } = supabase.auth.onAuthStateChange((_event, session) => {
+// //     setSession(session)
+// //     setAuthLoading(false)
+// //   })
+
+// //   return () => subscription.unsubscribe()
+// // }, [])
+// //   const [chats, setChats] = useState([])
+// // //   setChats([
+// // //   { id: 'chat-1', title: 'Learn Python' }
+// // // ])
+// //   const [activeChatId, setActiveChatId] = useState(null)
+// //   const [messages, setMessages] = useState([])
+// //   const [input, setInput] = useState('')
+// //   const [attachments, setAttachments] = useState([])
+// //   const [sidebarOpen, setSidebarOpen] = useState(true)
+// //   const [isLoading, setIsLoading] = useState(false)
+
+// //   const fileInputRef = useRef(null)
+
+  
+// // async function loadChatHistory(currentSession) {
+// //   if (!currentSession?.access_token) {
+// //     setChats([])
+// //     return
+// //   }
+
+// //   try {
+// //     const response = await fetch(`${API_BASE_URL}/threads`, {
+// //       headers: {
+// //         Authorization: `Bearer ${currentSession.access_token}`,
+// //       },
+// //     })
+
+// //     if (!response.ok) {
+// //       throw new Error('Failed to load chat history')
+// //     }
+
+// //     const data = await response.json()
+
+// //     setChats(
+// //       (data.threads || []).map((thread) => ({
+// //         id: typeof thread === 'string' ? thread : thread.thread_id,
+// //         title:
+// //           typeof thread === 'string'
+// //             ? 'Previous conversation'
+// //             : thread.title || 'Previous conversation',
+// //         messages: [],
+// //       }))
+// //     )
+// //   } catch (error) {
+// //     console.error('Chat history error:', error)
+// //   }
+// // }
+
+
+// //   function startNewChat() {
+// //     setActiveChatId(null)
+// //     setMessages([])
+// //     setInput('')
+// //     setAttachments([])
+// //   }
+
+    
+// //   async function selectChat(chat) {
+// //     setActiveChatId(chat.id)
+// //     setInput('')
+// //     setAttachments([])
+// //     setMessages(chat.messages ?? [])
+
+// //     if (!session?.access_token) return
+
+// //     try {
+// //       const response = await fetch(
+// //         `${API_BASE_URL}/threads/${encodeURIComponent(chat.id)}`,
+// //         {
+// //           headers: {
+// //             Authorization: `Bearer ${session.access_token}`,
+// //           },
+// //         }
+// //       )
+
+// //       if (!response.ok) {
+// //         throw new Error('Could not restore this conversation')
+// //       }
+
+// //       const data = await response.json()
+// //       setMessages(data.messages || [])
+// //     } catch (error) {
+// //       console.error('Conversation restore error:', error)
+// //     }
+// //   }
+
+
+// //   function handleFileSelect(event) {
+// //   const selectedFiles = Array.from(event.target.files ?? [])
+// //   const pdfFiles = selectedFiles.filter((file) =>
+// //     file.name.toLowerCase().endsWith('.pdf')
+// //   )
+
+// //   if (pdfFiles.length !== selectedFiles.length) {
+// //     alert('Only PDF files are supported currently.')
+// //   }
+
+// //   setAttachments((current) => [...current, ...pdfFiles])
+// //   event.target.value = ''
+// // }
+
+// //   function removeAttachment(index) {
+// //     setAttachments((current) =>
+// //       current.filter((_, currentIndex) => currentIndex !== index),
+// //     )
+// //   }
+
+// //   async function handleSubmit(event) {
+// //      event.preventDefault()
+
+// //   const text = input.trim()
+
+// //   if ((!text && attachments.length === 0) || isLoading) {
+// //     return
+// //   }
+
+// //   const threadId = activeChatId || crypto.randomUUID()
+// //   const filesToUpload = [...attachments]
+
+// //   const userMessage =
+// //     text ||
+// //     `Please summarize and analyze the uploaded PDF${
+// //       filesToUpload.length > 1 ? 's' : ''
+// //     }.`
+
+// //   const userEntry = {
+// //     id: crypto.randomUUID(),
+// //     role: 'user',
+// //     content: userMessage,
+// //     files: filesToUpload.map((file) => file.name),
+// //   }
+
+// //   setActiveChatId(threadId)
+// //   setMessages((current) => [...current, userEntry])
+// //   setInput('')
+// //   setAttachments([])
+// //   setIsLoading(true)
+
+
+// //   try {
+// //     // 1. Upload each selected PDF to the backend.
+// //     for (const file of filesToUpload) {
+// //       const formData = new FormData()
+
+// //       formData.append('thread_id', threadId)
+// //       formData.append('file', file)
+
+// //       const uploadResponse = await fetch(
+// //         `${API_BASE_URL}/upload-pdf`,
+// //         {
+// //           method: 'POST',
+// //           body: formData,
+// //         }
+// //       )
+
+// //       if (!uploadResponse.ok) {
+// //         const errorData = await uploadResponse
+// //           .json()
+// //           .catch(() => ({}))
+
+// //         throw new Error(
+// //           errorData.detail || `Failed to upload ${file.name}`
+// //         )
+// //       }
+// //     }
+
+// //     // 2. Send the message to the AI backend.
+// //     const response = await fetch(`${API_BASE_URL}/chat`, {
+// //       method: 'POST',
+// //       headers: {
+// //         'Content-Type': 'application/json',
+// //       },
+// //       body: JSON.stringify({
+// //         message: userMessage,
+// //         thread_id: threadId,
+// //       }),
+// //     })
+
+// //     const data = await response.json()
+
+// //     if (!response.ok) {
+// //       throw new Error(
+// //         data.detail || 'The chat request failed.'
+// //       )
+// //     }
+
+// //     // 3. Display the AI's response.
+// //     const assistantMessage = {
+// //       id: crypto.randomUUID(),
+// //       role: 'assistant',
+// //       content: data.response,
+// //     }
+
+// //     setMessages((current) => [
+// //       ...current,
+// //       assistantMessage,
+// //     ])
+
+// //     // 4. Save the conversation in the sidebar state.
+// //     setChats((current) => {
+// //       const existingChat = current.find(
+// //         (chat) => chat.id === threadId
+// //       )
+
+// //       const updatedChat = {
+// //         id: threadId,
+// //         title: userMessage.slice(0, 45) || 'New conversation',
+// //         messages: [
+// //           ...(existingChat?.messages ?? []),
+// //           userEntry,
+// //           assistantMessage,
+// //         ],
+// //       }
+
+// //       return existingChat
+// //         ? current.map((chat) =>
+// //             chat.id === threadId ? updatedChat : chat
+// //           )
+// //         : [updatedChat, ...current]
+// //     })
+// //   } catch (error) {
+// //     console.error('MultiMind request failed:', error)
+
+// //     setMessages((current) => [
+// //       ...current,
+// //       {
+// //         id: crypto.randomUUID(),
+// //         role: 'assistant',
+// //         content: `Request failed: ${error.message}. Please try again.`,
+// //       },
+// //     ])
+// //   } finally {
+// //     setIsLoading(false)
+// //   }
+// //   }
+
+  
+
+
+
+
+
+// //   return (
+    
+// //     <div className="app-shell">
+// //       {sidebarOpen && (
+// //         <aside className="sidebar">
+// //           <div className="sidebar-header">
+// //             <button
+// //               className="brand"
+// //               type="button"
+// //               onClick={startNewChat}
+// //               aria-label="MultiMind home"
+// //             >
+// //               <span className="brand-mark">M</span>
+// //               <span>MultiMind</span>
+// //             </button>
+
+// //             <button
+// //               className="icon-button sidebar-close"
+// //               type="button"
+// //               aria-label="Close sidebar"
+// //               onClick={() => setSidebarOpen(false)}
+// //             >
+// //               <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                 <rect x="3.5" y="4" width="17" height="16" rx="2" />
+// //                 <path d="M9 4v16" />
+// //               </svg>
+// //             </button>
+// //           </div>
+
+// //           <button
+// //             className="new-chat-button"
+// //             type="button"
+// //             onClick={startNewChat}
+// //           >
+// //             <svg viewBox="0 0 24 24" aria-hidden="true"> // dont read this 
+// //               <path d="M12 5v14M5 12h14" />
+// //             </svg>
+// //             <span>New chat</span>
+// //           </button>
+
+// //           <div className="chat-history">
+// //             <p className="sidebar-label">Your conversations</p>
+
+// //             {chats.length === 0 ? (
+// //               <div className="empty-history">
+// //                 <span className="history-icon" aria-hidden="true">
+// //                   <svg viewBox="0 0 24 24">
+// //                     <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
+// //                   </svg>
+// //                 </span>
+// //                 <p>Your conversations will appear here.</p>
+// //               </div>
+// //             ) : (
+// //               <div className="chat-list">
+// //                 {chats.map((chat) => (
+// //                   <button
+// //                     className={`chat-list-item ${
+// //                       activeChatId === chat.id ? 'active' : ''
+// //                     }`}
+// //                     key={chat.id}
+// //                     type="button"
+// //                     onClick={() => selectChat(chat)}
+// //                     title={chat.title}
+// //                   >
+// //                     <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                       <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
+// //                     </svg>
+// //                     <span>{chat.title}</span>
+// //                   </button>
+// //                 ))}
+// //               </div>
+// //             )}
+// //           </div>
+
+// //           <div className="sidebar-footer">
+// //             <div className="user-avatar" aria-hidden="true">
+// //               <svg viewBox="0 0 24 24">
+// //                 <circle cx="12" cy="8" r="3.5" />
+// //                 <path d="M5 20a7 7 0 0 1 14 0" />
+// //               </svg>
+// //             </div>
+
+            
+// //           <div className="user-details">
+// //             <strong>
+// //               {session?.user?.email ? 'My account' : 'Guest'}
+// //             </strong>
+
+// //             <span>
+// //               {session?.user?.email || 'Sign in to get started'}
+// //             </span>
+// //           </div>
+
+
+// //             <button
+// //               className="icon-button account-menu-button"
+// //               type="button"
+// //               aria-label="Account options"
+// //               onClick={() => setShowAuth(true)}
+// //             >
+// //               <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                 <circle cx="5" cy="12" r="1" />
+// //                 <circle cx="12" cy="12" r="1" />
+// //                 <circle cx="19" cy="12" r="1" />
+// //               </svg>
+// //             </button>
+// //           </div>
+// //         </aside>
+// //       )}
+
+// //       <main className="main-panel">
+// //         <header className="topbar">
+// //           <div className="topbar-left">
+// //             {!sidebarOpen && (
+// //               <button
+// //                 className="icon-button"
+// //                 type="button"
+// //                 aria-label="Open sidebar"
+// //                 onClick={() => setSidebarOpen(true)}
+// //               >
+// //                 <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                   <rect x="3.5" y="4" width="17" height="16" rx="2" />
+// //                   <path d="M9 4v16" />
+// //                 </svg>
+// //               </button>
+// //             )}
+
+// //             <div className="model-indicator">
+// //               <span className="status-dot" />
+// //               <span>MultiMind AI</span>
+// //               <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                 <path d="m8 10 4 4 4-4" />
+// //               </svg>
+// //             </div>
+// //           </div>
+
+// //           <button
+// //             className="login-button"
+// //             type="button"
+// //             onClick={() => setShowAuth(true)}
+// //           >
+// //             <svg viewBox="0 0 24 24" aria-hidden="true">
+// //               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+// //               <path d="M10 17l5-5-5-5M15 12H3" />
+// //             </svg>
+// //             <span>
+// //               {session?.user?.email || 'Log in / Sign up'}
+// //             </span>
+// //           </button>
+// //         </header>
+
+// //         <section className="conversation">
+// //           {messages.length === 0 ? (
+// //             <div className="welcome">
+// //               <div className="welcome-icon" aria-hidden="true">
+// //                 <svg viewBox="0 0 48 48">
+// //                   <path d="M24 4 28.5 18.5 43 23l-14.5 4.5L24 42l-4.5-14.5L5 23l14.5-4.5L24 4Z" />
+// //                   <path d="m39 31 2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6Z" />
+// //                 </svg>
+// //               </div>
+
+// //               <p className="welcome-eyebrow">YOUR PERSONAL AI WORKSPACE</p>
+// //               <h1>What can I help you with?</h1>
+// //               <p className="welcome-description">
+// //                 Ask questions, explore ideas, work with documents,
+// //                 and get things done in one place.
+// //               </p>
+
+// //               <div className="suggestion-grid">
+// //                 <button
+// //                   className="suggestion-card"
+// //                   type="button"
+// //                   onClick={() => setInput('')}
+// //                 >
+// //                   <span className="suggestion-icon learn-icon">
+// //                     <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                       <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+// //                       <path d="m6 10 6 3 6-3M5 12v5l7 4 7-4v-5" />
+// //                     </svg>
+// //                   </span>
+// //                   <span className="suggestion-text">
+// //                     <strong>Learn something</strong>
+// //                     <small>Understand topics step by step</small>
+// //                   </span>
+// //                   <span className="suggestion-arrow">↗</span>
+// //                 </button>
+
+// //                 <button
+// //                   className="suggestion-card"
+// //                   type="button"
+// //                   onClick={() => setInput('')}
+// //                 >
+// //                   <span className="suggestion-icon code-icon">
+// //                     <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+// //                     </svg>
+// //                   </span>
+// //                   <span className="suggestion-text">
+// //                     <strong>Code and create</strong>
+// //                     <small>Build projects and debug code</small>
+// //                   </span>
+// //                   <span className="suggestion-arrow">↗</span>
+// //                 </button>
+
+// //                 <button
+// //                   className="suggestion-card"
+// //                   type="button"
+// //                   onClick={() => fileInputRef.current?.click()}
+// //                 >
+// //                   <span className="suggestion-icon document-icon">
+// //                     <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                       <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10Z" />
+// //                       <path d="M13 3v7h7M8 14h8M8 17h8" />
+// //                     </svg>
+// //                   </span>
+// //                   <span className="suggestion-text">
+// //                     <strong>Explore documents</strong>
+// //                     <small>Prepare a file for analysis</small>
+// //                   </span>
+// //                   <span className="suggestion-arrow">↗</span>
+// //                 </button>
+
+// //                 <button
+// //                   className="suggestion-card"
+// //                   type="button"
+// //                   onClick={() => setInput('')}
+// //                 >
+// //                   <span className="suggestion-icon research-icon">
+// //                     <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                       <circle cx="10.5" cy="10.5" r="6.5" />
+// //                       <path d="m16 16 5 5M8 10.5h5M10.5 8v5" />
+// //                     </svg>
+// //                   </span>
+// //                   <span className="suggestion-text">
+// //                     <strong>Research and explore</strong>
+// //                     <small>Investigate ideas and questions</small>
+// //                   </span>
+// //                   <span className="suggestion-arrow">↗</span>
+// //                 </button>
+// //               </div>
+// //             </div>
+// //           ) : (
+// //             <div className="message-list">
+// //               {messages.map((message) => (
+// //                 <article
+// //                   className={`message ${message.role}`}
+// //                   key={message.id}
+// //                 >
+// //                   <div className="message-avatar">
+// //                     {message.role === 'user' ? 'U' : 'M'}
+// //                   </div>
+
+// //                   <div className="message-content">
+// //                     <strong>
+// //                       {message.role === 'user' ? 'You' : 'MultiMind'}
+// //                     </strong>
+// //                     {message.content && <p>{message.content}</p>}
+
+// //                     {message.files?.map((file, index) => (
+// //                       <div className="attached-file" key={`${file}-${index}`}>
+// //                         <span>↗</span>
+// //                         {file}
+// //                       </div>
+// //                     ))}
+// //                   </div>
+// //                 </article>
+// //               ))}
+
+// //               {isLoading && (
+// //                 <div className="loading-indicator" role="status">
+// //                   <span className="loading-dots"><i /><i /><i /></span>
+// //                   MultiMind is thinking...
+// //                 </div>
+// //               )}
+// //             </div>
+// //           )}
+// //         </section>
+
+// //         <footer className="composer-area">
+// //           <form className="composer" onSubmit={handleSubmit}>
+// //             {attachments.length > 0 && (
+// //               <div className="attachment-list">
+// //                 {attachments.map((file, index) => (
+// //                   <div
+// //                     className="attachment-chip"
+// //                     key={`${file.name}-${file.size}-${index}`}
+// //                   >
+// //                     <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                       <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" />
+// //                       <path d="M14 3v6h6" />
+// //                     </svg>
+// //                     <span title={file.name}>{file.name}</span>
+// //                     <button
+// //                       type="button"
+// //                       aria-label={`Remove ${file.name}`}
+// //                       onClick={() => removeAttachment(index)}
+// //                     >
+// //                       ×
+// //                     </button>
+// //                   </div>
+// //                 ))}
+// //               </div>
+// //             )}
+
+// //             <textarea
+// //               value={input}
+// //               onChange={(event) => setInput(event.target.value)}
+// //               onKeyDown={(event) => {
+// //                 if (
+// //                   event.key === 'Enter' &&
+// //                   !event.shiftKey &&
+// //                   !event.nativeEvent.isComposing
+// //                 ) {
+// //                   event.preventDefault()
+// //                   event.currentTarget.form.requestSubmit()
+// //                 }
+// //               }}
+// //               placeholder="Message MultiMind..."
+// //               aria-label="Message MultiMind"
+// //               rows={2}
+// //             />
+
+// //             <div className="composer-toolbar">
+// //               <div className="composer-tools">
+// //                 <input
+// //                   ref={fileInputRef}
+// //                   type="file"
+// //                   multiple
+// //                   hidden
+// //                   accept=".pdf,application/pdf"
+// //                   onChange={handleFileSelect}
+// //                 />
+
+// //                 <button
+// //                   className="attach-button"
+// //                   type="button"
+// //                   onClick={() => fileInputRef.current?.click()}
+// //                 >
+// //                   <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                     <path d="M12 5v14M5 12h14" />
+// //                   </svg>
+// //                   <span>Attach files</span>
+// //                 </button>
+// //               </div>
+
+// //               <button
+// //                 className="send-button"
+// //                 type="submit"
+// //                 disabled={
+// //                   isLoading ||
+// //                   (!input.trim() && attachments.length === 0)
+// //                 }
+// //                 aria-label="Send message"
+// //                 title="Send message"
+// //               >
+// //                 <svg viewBox="0 0 24 24" aria-hidden="true">
+// //                   <path d="M12 19V5M5 12l7-7 7 7" />
+// //                 </svg>
+// //               </button>
+// //             </div>
+// //           </form>
+
+// //           <p className="disclaimer">
+// //             <svg viewBox="0 0 24 24" aria-hidden="true">
+// //               <circle cx="12" cy="12" r="9" />
+// //               <path d="M12 11v5M12 8h.01" />
+// //             </svg>
+// //             AI can make mistakes. Verify important information.
+// //           </p>
+// //         </footer>
+      
+// //       </main>
+
+// //       {showAuth && (
+// //         <div
+// //           className="auth-overlay"
+// //           onMouseDown={(event) => {
+// //             if (event.target === event.currentTarget) {
+// //               setShowAuth(false)
+// //             }
+// //           }}
+// //         >
+// //           <div
+// //             className="auth-modal"
+// //             role="dialog"
+// //             aria-modal="true"
+// //             aria-label="Log in or sign up"
+// //           >
+// //             <button
+// //               type="button"
+// //               className="auth-close"
+// //               aria-label="Close authentication"
+// //               onClick={() => setShowAuth(false)}
+// //             >
+// //               ×
+// //             </button>
+
+// //             <Auth />
+// //           </div>
+// //         </div>
+// //       )}
+// //     </div>
+// //   )
+// // }
+
+// // export default App
+
+
+
+
+
+
 // import { useEffect, useRef, useState } from 'react'
 // import './App.css'
 // import Auth from './components/Auth'
 // import { supabase } from './library/supabase'
-
-
-
 // const API_BASE_URL =
-//   import.meta.env.VITE_API_BASE_URL ||
-//   'https://multimind-x5eq.onrender.com'
-
-
+//   import.meta.env.VITE_API_BASE_URL ||
+//   'https://multimind-x5eq.onrender.com'
 // function App() {
-
 // const [session, setSession] = useState(null)
 // const [authLoading, setAuthLoading] = useState(true)
-//  const [showAuth, setShowAuth] = useState(false)
-
+//  const [showAuth, setShowAuth] = useState(false)
 // useEffect(() => {
-//   supabase.auth.getSession().then(({ data, error }) => {
-//     if (error) {
-//       console.error('Could not retrieve session:', error.message)
-//     }
-
-//     setSession(data?.session ?? null)
-//     setAuthLoading(false)
-//   })
-
-//   const {
-//     data: { subscription },
-//   } = supabase.auth.onAuthStateChange((_event, session) => {
-//     setSession(session)
-//     setAuthLoading(false)
-//   })
-
-//   return () => subscription.unsubscribe()
+//   supabase.auth.getSession().then(({ data, error }) => {
+//     if (error) {
+//       console.error('Could not retrieve session:', error.message)
+//     }
+//     setSession(data?.session ?? null)
+//     setAuthLoading(false)
+//   })
+//   const {
+//     data: { subscription },
+//   } = supabase.auth.onAuthStateChange((_event, session) => {
+//     setSession(session)
+//     setAuthLoading(false)
+//   })
+//   return () => subscription.unsubscribe()
 // }, [])
-//   const [chats, setChats] = useState([])
-// //   setChats([
-// //   { id: 'chat-1', title: 'Learn Python' }
+//   const [chats, setChats] = useState([])
+// //   setChats([
+// //   { id: 'chat-1', title: 'Learn Python' }
 // // ])
-//   const [activeChatId, setActiveChatId] = useState(null)
-//   const [messages, setMessages] = useState([])
-//   const [input, setInput] = useState('')
-//   const [attachments, setAttachments] = useState([])
-//   const [sidebarOpen, setSidebarOpen] = useState(true)
-//   const [isLoading, setIsLoading] = useState(false)
-
-//   const fileInputRef = useRef(null)
-
-  
+//   const [activeChatId, setActiveChatId] = useState(null)
+//   const [messages, setMessages] = useState([])
+//   const [input, setInput] = useState('')
+//   const [attachments, setAttachments] = useState([])
+//   const [sidebarOpen, setSidebarOpen] = useState(true)
+//   const [isLoading, setIsLoading] = useState(false)
+//   const fileInputRef = useRef(null)
 // async function loadChatHistory(currentSession) {
-//   if (!currentSession?.access_token) {
+//   if (!currentSession?.access_token) {
+//     setChats([])
+//     return
+//   }
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/threads`, {
+//       headers: {
+//         Authorization: `Bearer ${currentSession.access_token}`,
+//       },
+//     })
+//     if (!response.ok) {
+//       throw new Error('Failed to load chat history')
+//     }
+//     const data = await response.json()
+//     setChats(
+//       (data.threads || []).map((thread) => ({
+//         id: typeof thread === 'string' ? thread : thread.thread_id,
+//         title:
+//           typeof thread === 'string'
+//             ? 'Previous conversation'
+//             : thread.title || 'Previous conversation',
+//         messages: [],
+//       }))
+//     )
+//   } catch (error) {
+//     console.error('Chat history error:', error)
+//   }
+// }useEffect(() => {
+//   if (session?.access_token) {
+//     loadChatHistory(session)
+//   } else if (!authLoading) {
 //     setChats([])
-//     return
-//   }
-
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/threads`, {
-//       headers: {
-//         Authorization: `Bearer ${currentSession.access_token}`,
-//       },
-//     })
-
-//     if (!response.ok) {
-//       throw new Error('Failed to load chat history')
-//     }
-
-//     const data = await response.json()
-
-//     setChats(
-//       (data.threads || []).map((thread) => ({
-//         id: typeof thread === 'string' ? thread : thread.thread_id,
-//         title:
-//           typeof thread === 'string'
-//             ? 'Previous conversation'
-//             : thread.title || 'Previous conversation',
-//         messages: [],
-//       }))
-//     )
-//   } catch (error) {
-//     console.error('Chat history error:', error)
-//   }
-// }
-
-
-//   function startNewChat() {
 //     setActiveChatId(null)
 //     setMessages([])
-//     setInput('')
-//     setAttachments([])
 //   }
-
-    
-//   async function selectChat(chat) {
-//     setActiveChatId(chat.id)
-//     setInput('')
-//     setAttachments([])
-//     setMessages(chat.messages ?? [])
-
-//     if (!session?.access_token) return
-
-//     try {
-//       const response = await fetch(
-//         `${API_BASE_URL}/threads/${encodeURIComponent(chat.id)}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${session.access_token}`,
-//           },
-//         }
-//       )
-
-//       if (!response.ok) {
-//         throw new Error('Could not restore this conversation')
-//       }
-
-//       const data = await response.json()
-//       setMessages(data.messages || [])
-//     } catch (error) {
-//       console.error('Conversation restore error:', error)
-//     }
-//   }
-
-
-//   function handleFileSelect(event) {
-//   const selectedFiles = Array.from(event.target.files ?? [])
-//   const pdfFiles = selectedFiles.filter((file) =>
-//     file.name.toLowerCase().endsWith('.pdf')
-//   )
-
-//   if (pdfFiles.length !== selectedFiles.length) {
-//     alert('Only PDF files are supported currently.')
-//   }
-
-//   setAttachments((current) => [...current, ...pdfFiles])
-//   event.target.value = ''
+// }, [session?.access_token, authLoading])
+//   function startNewChat() {
+//     setActiveChatId(null)
+//     setMessages([])
+//     setInput('')
+//     setAttachments([])
+//   }
+//   async function selectChat(chat) {
+//     setActiveChatId(chat.id)
+//     setInput('')
+//     setAttachments([])
+//     setMessages(chat.messages ?? [])
+//     if (!session?.access_token) return
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/threads/${encodeURIComponent(chat.id)}`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${session.access_token}`,
+//           },
+//         }
+//       )
+//       if (!response.ok) {
+//         throw new Error('Could not restore this conversation')
+//       }
+//       const data = await response.json()
+//       setMessages(data.messages || [])
+//     } catch (error) {
+//       console.error('Conversation restore error:', error)
+//     }
+//   }
+//   function handleFileSelect(event) {
+//   const selectedFiles = Array.from(event.target.files ?? [])
+//   const pdfFiles = selectedFiles.filter((file) =>
+//     file.name.toLowerCase().endsWith('.pdf')
+//   )
+//   if (pdfFiles.length !== selectedFiles.length) {
+//     alert('Only PDF files are supported currently.')
+//   }
+//   setAttachments((current) => [...current, ...pdfFiles])
+//   event.target.value = ''
 // }
+//   function removeAttachment(index) {
+//     setAttachments((current) =>
+//       current.filter((_, currentIndex) => currentIndex !== index),
+//     )
+//   }
+// //   async function handleSubmit(event) {
+// //      event.preventDefault()
+// //   if (!session?.access_token) {
+// //     setShowAuth(true)
+// //     return
+// //   }
+// //   const text = input.trim()
+// //   if ((!text && attachments.length === 0) || isLoading) {
+// //     return
+// //   }z
+// //   const threadId = activeChatId || crypto.randomUUID()
+// //   const filesToUpload = [...attachments]
+// //   const userMessage =
+// //     text ||
+// //     `Please summarize and analyze the uploaded PDF${
+// //       filesToUpload.length > 1 ? 's' : ''
+// //     }.`
+// //   const userEntry = {
+// //     id: crypto.randomUUID(),
+// //     role: 'user',
+// //     content: userMessage,
+// //     files: filesToUpload.map((file) => file.name),
+// //   }
+// //   setActiveChatId(threadId)
+// //   setMessages((current) => [...current, userEntry])
+// //   setInput('')
+// //   setAttachments([])
+// //   setIsLoading(true)
+// //   try {
+// //     // 1. Upload each selected PDF to the backend.
+// //     for (const file of filesToUpload) {
+// //       const formData = new FormData()
+// //       formData.append('thread_id', threadId)
+// //       formData.append('file', file)
+// //       const uploadResponse = await fetch(
+// //         `${API_BASE_URL}/upload-pdf`,
+// //         {
+// //           method: 'POST',
+// //           headers: {
+// //             Authorization: `Bearer ${session.access_token}`,
+// //           },
+// //           body: formData,
+// //         }
+// //       )
+// //       if (!uploadResponse.ok) {
+// //         const errorData = await uploadResponse
+// //           .json()
+// //           .catch(() => ({}))
+// //         throw new Error(
+// //           errorData.detail || `Failed to upload ${file.name}`
+// //         )
+// //       }
+// //     }
+// //     // 2. Send the message to the AI backend.
+// //     const response = await fetch(`${API_BASE_URL}/chat`, {
+// //       method: 'POST',
+// //       headers: {
+// //         'Content-Type': 'application/json',
+// //       Authorization: `Bearer ${session.access_token}`,
+// //       },
+// //       body: JSON.stringify({
+// //         message: userMessage,
+// //         thread_id: threadId,
+// //       }),
+// //     })
+// //     const data = await response.json()
+// //     if (!response.ok) {
+// //       throw new Error(
+// //         data.detail || 'The chat request failed.'
+// //       )
+// //     }
+// //     // 3. Display the AI's response.
+// //     const assistantMessage = {
+// //       id: crypto.randomUUID(),
+// //       role: 'assistant',
+// //       content: data.response,
+// //     }
+// //     setMessages((current) => [
+// //       ...current,
+// //       assistantMessage,
+// //     ])
+// //     // 4. Save the conversation in the sidebar state.
+// //     setChats((current) => {
+// //       const existingChat = current.find(
+// //         (chat) => chat.id === threadId
+// //       )
+// //       const updatedChat = {
+// //         id: threadId,
+// //         title: userMessage.slice(0, 45) || 'New conversation',
+// //         messages: [
+// //           ...(existingChat?.messages ?? []),
+// //           userEntry,
+// //           assistantMessage,
+// //         ],
+// //       }
+// //       return existingChat
+// //         ? current.map((chat) =>
+// //             chat.id === threadId ? updatedChat : chat
+// //           )
+// //         : [updatedChat, ...current]
+// //     })
+// //   } catch (error) {
+// //     console.error('MultiMind request failed:', error)
+// //     setMessages((current) => [
+// //       ...current,
+// //       {
+// //         id: crypto.randomUUID(),
+// //         role: 'assistant',
+// //         content: `Request failed: ${error.message}. Please try again.`,
+// //       },
+// //     ])
+// //   } finally {
+// //     setIsLoading(false)
+// //   }
+// //   }
 
-//   function removeAttachment(index) {
-//     setAttachments((current) =>
-//       current.filter((_, currentIndex) => currentIndex !== index),
-//     )
+
+// async function handleSubmit(event) {
+//   event.preventDefault()
+
+//   if (!session?.access_token) {
+//     setShowAuth(true)
+//     return
 //   }
-
-//   async function handleSubmit(event) {
-//      event.preventDefault()
 
 //   const text = input.trim()
 
@@ -173,12 +963,13 @@
 //   setAttachments([])
 //   setIsLoading(true)
 
+//   let assistantMessageId = null
+//   let fullResponse = ''
 
 //   try {
-//     // 1. Upload each selected PDF to the backend.
+//     // 1. Upload selected PDFs (if any).
 //     for (const file of filesToUpload) {
 //       const formData = new FormData()
-
 //       formData.append('thread_id', threadId)
 //       formData.append('file', file)
 
@@ -186,6 +977,9 @@
 //         `${API_BASE_URL}/upload-pdf`,
 //         {
 //           method: 'POST',
+//           headers: {
+//             Authorization: `Bearer ${session.access_token}`,
+//           },
 //           body: formData,
 //         }
 //       )
@@ -201,11 +995,12 @@
 //       }
 //     }
 
-//     // 2. Send the message to the AI backend.
+//     // 2. Send the message to the streaming backend.
 //     const response = await fetch(`${API_BASE_URL}/chat`, {
 //       method: 'POST',
 //       headers: {
 //         'Content-Type': 'application/json',
+//         Authorization: `Bearer ${session.access_token}`,
 //       },
 //       body: JSON.stringify({
 //         message: userMessage,
@@ -213,27 +1008,106 @@
 //       }),
 //     })
 
-//     const data = await response.json()
-
 //     if (!response.ok) {
+//       const errorData = await response.json().catch(() => ({}))
 //       throw new Error(
-//         data.detail || 'The chat request failed.'
+//         errorData.detail || 'The chat request failed.'
 //       )
 //     }
 
-//     // 3. Display the AI's response.
-//     const assistantMessage = {
-//       id: crypto.randomUUID(),
-//       role: 'assistant',
-//       content: data.response,
+//     if (!response.body) {
+//       throw new Error('The server did not provide a response stream.')
 //     }
+
+//     // 3. Create an empty assistant message for live updates.
+//     assistantMessageId = crypto.randomUUID()
 
 //     setMessages((current) => [
 //       ...current,
-//       assistantMessage,
+//       {
+//         id: assistantMessageId,
+//         role: 'assistant',
+//         content: '',
+//       },
 //     ])
 
-//     // 4. Save the conversation in the sidebar state.
+//     // 4. Read and parse the server-sent events.
+//     const reader = response.body.getReader()
+//     const decoder = new TextDecoder()
+//     let buffer = ''
+//     let streamFinished = false
+
+//     const processEvent = (eventText) => {
+//       const dataLine = eventText
+//         .split('\n')
+//         .find((line) => line.startsWith('data: '))
+
+//       if (!dataLine) return
+
+//       let eventData
+
+//       try {
+//         eventData = JSON.parse(dataLine.slice(6))
+//       } catch {
+//         return
+//       }
+
+//       if (eventData.type === 'token') {
+//         fullResponse += eventData.content || ''
+
+//         setMessages((current) =>
+//           current.map((message) =>
+//             message.id === assistantMessageId
+//               ? { ...message, content: fullResponse }
+//               : message
+//           )
+//         )
+//       } else if (eventData.type === 'done') {
+//         streamFinished = true
+//       } else if (eventData.type === 'error') {
+//         throw new Error(
+//           eventData.content || 'The chat request failed.'
+//         )
+//       }
+//     }
+
+//     while (true) {
+//       const { value, done } = await reader.read()
+
+//       if (done) break
+
+//       buffer += decoder.decode(value, { stream: true })
+
+//       const events = buffer.split('\n\n')
+//       buffer = events.pop() || ''
+
+//       for (const eventText of events) {
+//         processEvent(eventText)
+//       }
+//     }
+
+//     // Process any final buffered data.
+//     buffer += decoder.decode()
+
+//     if (buffer.trim()) {
+//       processEvent(buffer)
+//     }
+
+//     if (!streamFinished) {
+//       throw new Error('The response stream ended unexpectedly.')
+//     }
+
+//     if (!fullResponse.trim()) {
+//       throw new Error('The assistant returned an empty response.')
+//     }
+
+//     // 5. Save the completed conversation in the sidebar.
+//     const assistantMessage = {
+//       id: assistantMessageId,
+//       role: 'assistant',
+//       content: fullResponse,
+//     }
+
 //     setChats((current) => {
 //       const existingChat = current.find(
 //         (chat) => chat.id === threadId
@@ -258,6 +1132,15 @@
 //   } catch (error) {
 //     console.error('MultiMind request failed:', error)
 
+//     // Remove an incomplete assistant response if streaming failed.
+//     if (assistantMessageId) {
+//       setMessages((current) =>
+//         current.filter(
+//           (message) => message.id !== assistantMessageId
+//         )
+//       )
+//     }
+
 //     setMessages((current) => [
 //       ...current,
 //       {
@@ -269,1258 +1152,1255 @@
 //   } finally {
 //     setIsLoading(false)
 //   }
-//   }
-
-  
-
-
-
-
-
-//   return (
-    
-//     <div className="app-shell">
-//       {sidebarOpen && (
-//         <aside className="sidebar">
-//           <div className="sidebar-header">
-//             <button
-//               className="brand"
-//               type="button"
-//               onClick={startNewChat}
-//               aria-label="MultiMind home"
-//             >
-//               <span className="brand-mark">M</span>
-//               <span>MultiMind</span>
-//             </button>
-
-//             <button
-//               className="icon-button sidebar-close"
-//               type="button"
-//               aria-label="Close sidebar"
-//               onClick={() => setSidebarOpen(false)}
-//             >
-//               <svg viewBox="0 0 24 24" aria-hidden="true">
-//                 <rect x="3.5" y="4" width="17" height="16" rx="2" />
-//                 <path d="M9 4v16" />
-//               </svg>
-//             </button>
-//           </div>
-
-//           <button
-//             className="new-chat-button"
-//             type="button"
-//             onClick={startNewChat}
-//           >
-//             <svg viewBox="0 0 24 24" aria-hidden="true"> // dont read this 
-//               <path d="M12 5v14M5 12h14" />
-//             </svg>
-//             <span>New chat</span>
-//           </button>
-
-//           <div className="chat-history">
-//             <p className="sidebar-label">Your conversations</p>
-
-//             {chats.length === 0 ? (
-//               <div className="empty-history">
-//                 <span className="history-icon" aria-hidden="true">
-//                   <svg viewBox="0 0 24 24">
-//                     <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
-//                   </svg>
-//                 </span>
-//                 <p>Your conversations will appear here.</p>
-//               </div>
-//             ) : (
-//               <div className="chat-list">
-//                 {chats.map((chat) => (
-//                   <button
-//                     className={`chat-list-item ${
-//                       activeChatId === chat.id ? 'active' : ''
-//                     }`}
-//                     key={chat.id}
-//                     type="button"
-//                     onClick={() => selectChat(chat)}
-//                     title={chat.title}
-//                   >
-//                     <svg viewBox="0 0 24 24" aria-hidden="true">
-//                       <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
-//                     </svg>
-//                     <span>{chat.title}</span>
-//                   </button>
-//                 ))}
-//               </div>
-//             )}
-//           </div>
-
-//           <div className="sidebar-footer">
-//             <div className="user-avatar" aria-hidden="true">
-//               <svg viewBox="0 0 24 24">
-//                 <circle cx="12" cy="8" r="3.5" />
-//                 <path d="M5 20a7 7 0 0 1 14 0" />
-//               </svg>
-//             </div>
-
-            
-//           <div className="user-details">
-//             <strong>
-//               {session?.user?.email ? 'My account' : 'Guest'}
-//             </strong>
-
-//             <span>
-//               {session?.user?.email || 'Sign in to get started'}
-//             </span>
-//           </div>
-
-
-//             <button
-//               className="icon-button account-menu-button"
-//               type="button"
-//               aria-label="Account options"
-//               onClick={() => setShowAuth(true)}
-//             >
-//               <svg viewBox="0 0 24 24" aria-hidden="true">
-//                 <circle cx="5" cy="12" r="1" />
-//                 <circle cx="12" cy="12" r="1" />
-//                 <circle cx="19" cy="12" r="1" />
-//               </svg>
-//             </button>
-//           </div>
-//         </aside>
-//       )}
-
-//       <main className="main-panel">
-//         <header className="topbar">
-//           <div className="topbar-left">
-//             {!sidebarOpen && (
-//               <button
-//                 className="icon-button"
-//                 type="button"
-//                 aria-label="Open sidebar"
-//                 onClick={() => setSidebarOpen(true)}
-//               >
-//                 <svg viewBox="0 0 24 24" aria-hidden="true">
-//                   <rect x="3.5" y="4" width="17" height="16" rx="2" />
-//                   <path d="M9 4v16" />
-//                 </svg>
-//               </button>
-//             )}
-
-//             <div className="model-indicator">
-//               <span className="status-dot" />
-//               <span>MultiMind AI</span>
-//               <svg viewBox="0 0 24 24" aria-hidden="true">
-//                 <path d="m8 10 4 4 4-4" />
-//               </svg>
-//             </div>
-//           </div>
-
-//           <button
-//             className="login-button"
-//             type="button"
-//             onClick={() => setShowAuth(true)}
-//           >
-//             <svg viewBox="0 0 24 24" aria-hidden="true">
-//               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-//               <path d="M10 17l5-5-5-5M15 12H3" />
-//             </svg>
-//             <span>
-//               {session?.user?.email || 'Log in / Sign up'}
-//             </span>
-//           </button>
-//         </header>
-
-//         <section className="conversation">
-//           {messages.length === 0 ? (
-//             <div className="welcome">
-//               <div className="welcome-icon" aria-hidden="true">
-//                 <svg viewBox="0 0 48 48">
-//                   <path d="M24 4 28.5 18.5 43 23l-14.5 4.5L24 42l-4.5-14.5L5 23l14.5-4.5L24 4Z" />
-//                   <path d="m39 31 2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6Z" />
-//                 </svg>
-//               </div>
-
-//               <p className="welcome-eyebrow">YOUR PERSONAL AI WORKSPACE</p>
-//               <h1>What can I help you with?</h1>
-//               <p className="welcome-description">
-//                 Ask questions, explore ideas, work with documents,
-//                 and get things done in one place.
-//               </p>
-
-//               <div className="suggestion-grid">
-//                 <button
-//                   className="suggestion-card"
-//                   type="button"
-//                   onClick={() => setInput('')}
-//                 >
-//                   <span className="suggestion-icon learn-icon">
-//                     <svg viewBox="0 0 24 24" aria-hidden="true">
-//                       <path d="M12 3 3 8l9 5 9-5-9-5Z" />
-//                       <path d="m6 10 6 3 6-3M5 12v5l7 4 7-4v-5" />
-//                     </svg>
-//                   </span>
-//                   <span className="suggestion-text">
-//                     <strong>Learn something</strong>
-//                     <small>Understand topics step by step</small>
-//                   </span>
-//                   <span className="suggestion-arrow">↗</span>
-//                 </button>
-
-//                 <button
-//                   className="suggestion-card"
-//                   type="button"
-//                   onClick={() => setInput('')}
-//                 >
-//                   <span className="suggestion-icon code-icon">
-//                     <svg viewBox="0 0 24 24" aria-hidden="true">
-//                       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
-//                     </svg>
-//                   </span>
-//                   <span className="suggestion-text">
-//                     <strong>Code and create</strong>
-//                     <small>Build projects and debug code</small>
-//                   </span>
-//                   <span className="suggestion-arrow">↗</span>
-//                 </button>
-
-//                 <button
-//                   className="suggestion-card"
-//                   type="button"
-//                   onClick={() => fileInputRef.current?.click()}
-//                 >
-//                   <span className="suggestion-icon document-icon">
-//                     <svg viewBox="0 0 24 24" aria-hidden="true">
-//                       <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10Z" />
-//                       <path d="M13 3v7h7M8 14h8M8 17h8" />
-//                     </svg>
-//                   </span>
-//                   <span className="suggestion-text">
-//                     <strong>Explore documents</strong>
-//                     <small>Prepare a file for analysis</small>
-//                   </span>
-//                   <span className="suggestion-arrow">↗</span>
-//                 </button>
-
-//                 <button
-//                   className="suggestion-card"
-//                   type="button"
-//                   onClick={() => setInput('')}
-//                 >
-//                   <span className="suggestion-icon research-icon">
-//                     <svg viewBox="0 0 24 24" aria-hidden="true">
-//                       <circle cx="10.5" cy="10.5" r="6.5" />
-//                       <path d="m16 16 5 5M8 10.5h5M10.5 8v5" />
-//                     </svg>
-//                   </span>
-//                   <span className="suggestion-text">
-//                     <strong>Research and explore</strong>
-//                     <small>Investigate ideas and questions</small>
-//                   </span>
-//                   <span className="suggestion-arrow">↗</span>
-//                 </button>
-//               </div>
-//             </div>
-//           ) : (
-//             <div className="message-list">
-//               {messages.map((message) => (
-//                 <article
-//                   className={`message ${message.role}`}
-//                   key={message.id}
-//                 >
-//                   <div className="message-avatar">
-//                     {message.role === 'user' ? 'U' : 'M'}
-//                   </div>
-
-//                   <div className="message-content">
-//                     <strong>
-//                       {message.role === 'user' ? 'You' : 'MultiMind'}
-//                     </strong>
-//                     {message.content && <p>{message.content}</p>}
-
-//                     {message.files?.map((file, index) => (
-//                       <div className="attached-file" key={`${file}-${index}`}>
-//                         <span>↗</span>
-//                         {file}
-//                       </div>
-//                     ))}
-//                   </div>
-//                 </article>
-//               ))}
-
-//               {isLoading && (
-//                 <div className="loading-indicator" role="status">
-//                   <span className="loading-dots"><i /><i /><i /></span>
-//                   MultiMind is thinking...
-//                 </div>
-//               )}
-//             </div>
-//           )}
-//         </section>
-
-//         <footer className="composer-area">
-//           <form className="composer" onSubmit={handleSubmit}>
-//             {attachments.length > 0 && (
-//               <div className="attachment-list">
-//                 {attachments.map((file, index) => (
-//                   <div
-//                     className="attachment-chip"
-//                     key={`${file.name}-${file.size}-${index}`}
-//                   >
-//                     <svg viewBox="0 0 24 24" aria-hidden="true">
-//                       <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" />
-//                       <path d="M14 3v6h6" />
-//                     </svg>
-//                     <span title={file.name}>{file.name}</span>
-//                     <button
-//                       type="button"
-//                       aria-label={`Remove ${file.name}`}
-//                       onClick={() => removeAttachment(index)}
-//                     >
-//                       ×
-//                     </button>
-//                   </div>
-//                 ))}
-//               </div>
-//             )}
-
-//             <textarea
-//               value={input}
-//               onChange={(event) => setInput(event.target.value)}
-//               onKeyDown={(event) => {
-//                 if (
-//                   event.key === 'Enter' &&
-//                   !event.shiftKey &&
-//                   !event.nativeEvent.isComposing
-//                 ) {
-//                   event.preventDefault()
-//                   event.currentTarget.form.requestSubmit()
-//                 }
-//               }}
-//               placeholder="Message MultiMind..."
-//               aria-label="Message MultiMind"
-//               rows={2}
-//             />
-
-//             <div className="composer-toolbar">
-//               <div className="composer-tools">
-//                 <input
-//                   ref={fileInputRef}
-//                   type="file"
-//                   multiple
-//                   hidden
-//                   accept=".pdf,application/pdf"
-//                   onChange={handleFileSelect}
-//                 />
-
-//                 <button
-//                   className="attach-button"
-//                   type="button"
-//                   onClick={() => fileInputRef.current?.click()}
-//                 >
-//                   <svg viewBox="0 0 24 24" aria-hidden="true">
-//                     <path d="M12 5v14M5 12h14" />
-//                   </svg>
-//                   <span>Attach files</span>
-//                 </button>
-//               </div>
-
-//               <button
-//                 className="send-button"
-//                 type="submit"
-//                 disabled={
-//                   isLoading ||
-//                   (!input.trim() && attachments.length === 0)
-//                 }
-//                 aria-label="Send message"
-//                 title="Send message"
-//               >
-//                 <svg viewBox="0 0 24 24" aria-hidden="true">
-//                   <path d="M12 19V5M5 12l7-7 7 7" />
-//                 </svg>
-//               </button>
-//             </div>
-//           </form>
-
-//           <p className="disclaimer">
-//             <svg viewBox="0 0 24 24" aria-hidden="true">
-//               <circle cx="12" cy="12" r="9" />
-//               <path d="M12 11v5M12 8h.01" />
-//             </svg>
-//             AI can make mistakes. Verify important information.
-//           </p>
-//         </footer>
-      
-//       </main>
-
-//       {showAuth && (
-//         <div
-//           className="auth-overlay"
-//           onMouseDown={(event) => {
-//             if (event.target === event.currentTarget) {
-//               setShowAuth(false)
-//             }
-//           }}
-//         >
-//           <div
-//             className="auth-modal"
-//             role="dialog"
-//             aria-modal="true"
-//             aria-label="Log in or sign up"
-//           >
-//             <button
-//               type="button"
-//               className="auth-close"
-//               aria-label="Close authentication"
-//               onClick={() => setShowAuth(false)}
-//             >
-//               ×
-//             </button>
-
-//             <Auth />
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   )
 // }
 
+//   return (
+
+//     <div className="app-shell">
+//       {sidebarOpen && (
+//         <aside className="sidebar">
+//           <div className="sidebar-header">
+//             <button
+//               className="brand"
+//               type="button"
+//               onClick={startNewChat}
+//               aria-label="MultiMind home"
+//             >
+//               <span className="brand-mark">M</span>
+//               <span>MultiMind</span>
+//             </button>
+//             <button
+//               className="icon-button sidebar-close"
+//               type="button"
+//               aria-label="Close sidebar"
+//               onClick={() => setSidebarOpen(false)}
+//             >
+//               <svg viewBox="0 0 24 24" aria-hidden="true">
+//                 <rect x="3.5" y="4" width="17" height="16" rx="2" />
+//                 <path d="M9 4v16" />
+//               </svg>
+//             </button>
+//           </div>
+//           <button
+//             className="new-chat-button"
+//             type="button"
+//             onClick={startNewChat}
+//           >
+//             <svg viewBox="0 0 24 24" aria-hidden="true"> // dont read this&#x20;
+//               <path d="M12 5v14M5 12h14" />
+//             </svg>
+//             <span>New chat</span>
+//           </button>
+//           <div className="chat-history">
+//             <p className="sidebar-label">Your conversations</p>
+//             {chats.length === 0 ? (
+//               <div className="empty-history">
+//                 <span className="history-icon" aria-hidden="true">
+//                   <svg viewBox="0 0 24 24">
+//                     <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
+//                   </svg>
+//                 </span>
+//                 <p>Your conversations will appear here.</p>
+//               </div>
+//             ) : (
+//               <div className="chat-list">
+//                 {chats.map((chat) => (
+//                   <button
+//                     className={`chat-list-item ${
+//                       activeChatId === chat.id ? 'active' : ''
+//                     }`}
+//                     key={chat.id}
+//                     type="button"
+//                     onClick={() => selectChat(chat)}
+//                     title={chat.title}
+//                   >
+//                     <svg viewBox="0 0 24 24" aria-hidden="true">
+//                       <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
+//                     </svg>
+//                     <span>{chat.title}</span>
+//                   </button>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//           <div className="sidebar-footer">
+//             <div className="user-avatar" aria-hidden="true">
+//               <svg viewBox="0 0 24 24">
+//                 <circle cx="12" cy="8" r="3.5" />
+//                 <path d="M5 20a7 7 0 0 1 14 0" />
+//               </svg>
+//             </div>
+//           <div className="user-details">
+//             <strong>
+//               {session?.user?.email ? 'My account' : 'Guest'}
+//             </strong>
+//             <span>
+//               {session?.user?.email || 'Sign in to get started'}
+//             </span>
+//           </div>
+//             <button
+//               className="icon-button account-menu-button"
+//               type="button"
+//               aria-label="Account options"
+//               onClick={() => setShowAuth(true)}
+//             >
+//               <svg viewBox="0 0 24 24" aria-hidden="true">
+//                 <circle cx="5" cy="12" r="1" />
+//                 <circle cx="12" cy="12" r="1" />
+//                 <circle cx="19" cy="12" r="1" />
+//               </svg>
+//             </button>
+//           </div>
+//         </aside>
+//       )}
+//       <main className="main-panel">
+//         <header className="topbar">
+//           <div className="topbar-left">
+//             {!sidebarOpen && (
+//               <button
+//                 className="icon-button"
+//                 type="button"
+//                 aria-label="Open sidebar"
+//                 onClick={() => setSidebarOpen(true)}
+//               >
+//                 <svg viewBox="0 0 24 24" aria-hidden="true">
+//                   <rect x="3.5" y="4" width="17" height="16" rx="2" />
+//                   <path d="M9 4v16" />
+//                 </svg>
+//               </button>
+//             )}
+//             <div className="model-indicator">
+//               <span className="status-dot" />
+//               <span>MultiMind AI</span>
+//               <svg viewBox="0 0 24 24" aria-hidden="true">
+//                 <path d="m8 10 4 4 4-4" />
+//               </svg>
+//             </div>
+//           </div>
+//           <button
+//             className="login-button"
+//             type="button"
+//             onClick={() => setShowAuth(true)}
+//           >
+//             <svg viewBox="0 0 24 24" aria-hidden="true">
+//               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+//               <path d="M10 17l5-5-5-5M15 12H3" />
+//             </svg>
+//             <span>
+//               {session?.user?.email || 'Log in / Sign up'}
+//             </span>
+//           </button>
+//         </header>
+//         <section className="conversation">
+//           {messages.length === 0 ? (
+//             <div className="welcome">
+//               <div className="welcome-icon" aria-hidden="true">
+//                 <svg viewBox="0 0 48 48">
+//                   <path d="M24 4 28.5 18.5 43 23l-14.5 4.5L24 42l-4.5-14.5L5 23l14.5-4.5L24 4Z" />
+//                   <path d="m39 31 2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6Z" />
+//                 </svg>
+//               </div>
+//               <p className="welcome-eyebrow">YOUR PERSONAL AI WORKSPACE</p>
+//               <h1>What can I help you with?</h1>
+//               <p className="welcome-description">
+//                 Ask questions, explore ideas, work with documents,
+//                 and get things done in one place.
+//               </p>
+//               <div className="suggestion-grid">
+//                 <button
+//                   className="suggestion-card"
+//                   type="button"
+//                   onClick={() => setInput('')}
+//                 >
+//                   <span className="suggestion-icon learn-icon">
+//                     <svg viewBox="0 0 24 24" aria-hidden="true">
+//                       <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+//                       <path d="m6 10 6 3 6-3M5 12v5l7 4 7-4v-5" />
+//                     </svg>
+//                   </span>
+//                   <span className="suggestion-text">
+//                     <strong>Learn something</strong>
+//                     <small>Understand topics step by step</small>
+//                   </span>
+//                   <span className="suggestion-arrow">↗</span>
+//                 </button>
+//                 <button
+//                   className="suggestion-card"
+//                   type="button"
+//                   onClick={() => setInput('')}
+//                 >
+//                   <span className="suggestion-icon code-icon">
+//                     <svg viewBox="0 0 24 24" aria-hidden="true">
+//                       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+//                     </svg>
+//                   </span>
+//                   <span className="suggestion-text">
+//                     <strong>Code and create</strong>
+//                     <small>Build projects and debug code</small>
+//                   </span>
+//                   <span className="suggestion-arrow">↗</span>
+//                 </button>
+//                 <button
+//                   className="suggestion-card"
+//                   type="button"
+//                   onClick={() => fileInputRef.current?.click()}
+//                 >
+//                   <span className="suggestion-icon document-icon">
+//                     <svg viewBox="0 0 24 24" aria-hidden="true">
+//                       <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10Z" />
+//                       <path d="M13 3v7h7M8 14h8M8 17h8" />
+//                     </svg>
+//                   </span>
+//                   <span className="suggestion-text">
+//                     <strong>Explore documents</strong>
+//                     <small>Prepare a file for analysis</small>
+//                   </span>
+//                   <span className="suggestion-arrow">↗</span>
+//                 </button>
+//                 <button
+//                   className="suggestion-card"
+//                   type="button"
+//                   onClick={() => setInput('')}
+//                 >
+//                   <span className="suggestion-icon research-icon">
+//                     <svg viewBox="0 0 24 24" aria-hidden="true">
+//                       <circle cx="10.5" cy="10.5" r="6.5" />
+//                       <path d="m16 16 5 5M8 10.5h5M10.5 8v5" />
+//                     </svg>
+//                   </span>
+//                   <span className="suggestion-text">
+//                     <strong>Research and explore</strong>
+//                     <small>Investigate ideas and questions</small>
+//                   </span>
+//                   <span className="suggestion-arrow">↗</span>
+//                 </button>
+//               </div>
+//             </div>
+//           ) : (
+//             <div className="message-list">
+//               {messages.map((message) => (
+//                 <article
+//                   className={`message ${message.role}`}
+//                   key={message.id}
+//                 >
+//                   <div className="message-avatar">
+//                     {message.role === 'user' ? 'U' : 'M'}
+//                   </div>
+//                   <div className="message-content">
+//                     <strong>
+//                       {message.role === 'user' ? 'You' : 'MultiMind'}
+//                     </strong>
+//                     {message.content && <p>{message.content}</p>}
+//                     {message.files?.map((file, index) => (
+//                       <div className="attached-file" key={`${file}-${index}`}>
+//                         <span>↗</span>
+//                         {file}
+//                       </div>
+//                     ))}
+//                   </div>
+//                 </article>
+//               ))}
+//               {isLoading && (
+//                 <div className="loading-indicator" role="status">
+//                   <span className="loading-dots"><i /><i /><i /></span>
+//                   MultiMind is thinking...
+//                 </div>
+//               )}
+//             </div>
+//           )}
+//         </section>
+//         <footer className="composer-area">
+//           <form className="composer" onSubmit={handleSubmit}>
+//             {attachments.length > 0 && (
+//               <div className="attachment-list">
+//                 {attachments.map((file, index) => (
+//                   <div
+//                     className="attachment-chip"
+//                     key={`${file.name}-${file.size}-${index}`}
+//                   >
+//                     <svg viewBox="0 0 24 24" aria-hidden="true">
+//                       <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" />
+//                       <path d="M14 3v6h6" />
+//                     </svg>
+//                     <span title={file.name}>{file.name}</span>
+//                     <button
+//                       type="button"
+//                       aria-label={`Remove ${file.name}`}
+//                       onClick={() => removeAttachment(index)}
+//                     >
+//                       ×
+//                     </button>
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+//             <textarea
+//               value={input}
+//               onChange={(event) => setInput(event.target.value)}
+//               onKeyDown={(event) => {
+//                 if (
+//                   event.key === 'Enter' &&
+//                   !event.shiftKey &&
+//                   !event.nativeEvent.isComposing
+//                 ) {
+//                   event.preventDefault()
+//                   event.currentTarget.form.requestSubmit()
+//                 }
+//               }}
+//               placeholder="Message MultiMind..."
+//               aria-label="Message MultiMind"
+//               rows={2}
+//             />
+//             <div className="composer-toolbar">
+//               <div className="composer-tools">
+//                 <input
+//                   ref={fileInputRef}
+//                   type="file"
+//                   multiple
+//                   hidden
+//                   accept=".pdf,application/pdf"
+//                   onChange={handleFileSelect}
+//                 />
+//                 <button
+//                   className="attach-button"
+//                   type="button"
+//                   onClick={() => fileInputRef.current?.click()}
+//                 >
+//                   <svg viewBox="0 0 24 24" aria-hidden="true">
+//                     <path d="M12 5v14M5 12h14" />
+//                   </svg>
+//                   <span>Attach files</span>
+//                 </button>
+//               </div>
+//               <button
+//                 className="send-button"
+//                 type="submit"
+//                 disabled={
+//                   isLoading ||
+//                   (!input.trim() && attachments.length === 0)
+//                 }
+//                 aria-label="Send message"
+//                 title="Send message"
+//               >
+//                 <svg viewBox="0 0 24 24" aria-hidden="true">
+//                   <path d="M12 19V5M5 12l7-7 7 7" />
+//                 </svg>
+//               </button>
+//             </div>
+//           </form>
+//           <p className="disclaimer">
+//             <svg viewBox="0 0 24 24" aria-hidden="true">
+//               <circle cx="12" cy="12" r="9" />
+//               <path d="M12 11v5M12 8h.01" />
+//             </svg>
+//             AI can make mistakes. Verify important information.
+//           </p>
+//         </footer>
+//       </main>
+//       {showAuth && (
+//         <div
+//           className="auth-overlay"
+//           onMouseDown={(event) => {
+//             if (event.target === event.currentTarget) {
+//               setShowAuth(false)
+//             }
+//           }}
+//         >
+//           <div
+//             className="auth-modal"
+//             role="dialog"
+//             aria-modal="true"
+//             aria-label="Log in or sign up"
+//           >
+//             <button
+//               type="button"
+//               className="auth-close"
+//               aria-label="Close authentication"
+//               onClick={() => setShowAuth(false)}
+//             >
+//               ×
+//             </button>
+//             <Auth />
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
 // export default App
+
 
 
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import Auth from './components/Auth'
 import { supabase } from './library/supabase'
+
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  'https://multimind-x5eq.onrender.com'
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://multimind-x5eq.onrender.com'
+
 function App() {
-const [session, setSession] = useState(null)
-const [authLoading, setAuthLoading] = useState(true)
- const [showAuth, setShowAuth] = useState(false)
-useEffect(() => {
-  supabase.auth.getSession().then(({ data, error }) => {
-    if (error) {
-      console.error('Could not retrieve session:', error.message)
-    }
-    setSession(data?.session ?? null)
-    setAuthLoading(false)
-  })
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setSession(session)
-    setAuthLoading(false)
-  })
-  return () => subscription.unsubscribe()
-}, [])
-  const [chats, setChats] = useState([])
-//   setChats([
-//   { id: 'chat-1', title: 'Learn Python' }
-// ])
-  const [activeChatId, setActiveChatId] = useState(null)
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
-  const [attachments, setAttachments] = useState([])
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
-  const fileInputRef = useRef(null)
-async function loadChatHistory(currentSession) {
-  if (!currentSession?.access_token) {
-    setChats([])
-    return
-  }
-  try {
-    const response = await fetch(`${API_BASE_URL}/threads`, {
-      headers: {
-        Authorization: `Bearer ${currentSession.access_token}`,
-      },
-    })
-    if (!response.ok) {
-      throw new Error('Failed to load chat history')
-    }
-    const data = await response.json()
-    setChats(
-      (data.threads || []).map((thread) => ({
-        id: typeof thread === 'string' ? thread : thread.thread_id,
-        title:
-          typeof thread === 'string'
-            ? 'Previous conversation'
-            : thread.title || 'Previous conversation',
-        messages: [],
-      }))
-    )
-  } catch (error) {
-    console.error('Chat history error:', error)
-  }
-}useEffect(() => {
-  if (session?.access_token) {
-    loadChatHistory(session)
-  } else if (!authLoading) {
-    setChats([])
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [showAuth, setShowAuth] = useState(false)
+  const [chats, setChats] = useState([])
+  const [activeChatId, setActiveChatId] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [attachments, setAttachments] = useState([])
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fileInputRef = useRef(null)
+  const historyRequestRef = useRef(0)
+  const selectedChatRequestRef = useRef(0)
+
+  // Initialize authentication and listen for login/logout changes.
+  useEffect(() => {
+    let mounted = true
+
+    async function initializeAuth() {
+      const { data, error } = await supabase.auth.getSession()
+
+      if (!mounted) return
+
+      if (error) {
+        console.error('Could not retrieve session:', error.message)
+      }
+
+      setSession(data?.session ?? null)
+      setAuthLoading(false)
+    }
+
+    initializeAuth()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!mounted) return
+
+      setSession(newSession)
+      setAuthLoading(false)
+
+      if (newSession) {
+        // Close the login modal after a successful login.
+        setShowAuth(false)
+      } else {
+        // Clear the previous account's frontend state on logout.
+        setShowAuth(false)
+        setChats([])
+        setActiveChatId(null)
+        setMessages([])
+        setInput('')
+        setAttachments([])
+        historyRequestRef.current += 1
+        selectedChatRequestRef.current += 1
+      }
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  // Load conversation history for the authenticated session.
+  async function loadChatHistory(currentSession) {
+    const requestId = ++historyRequestRef.current
+
+    if (!currentSession?.access_token) {
+      setChats([])
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/threads`, {
+        headers: {
+          Authorization: `Bearer ${currentSession.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to load chat history')
+      }
+
+      const data = await response.json()
+
+      // Ignore an old response if the session has changed.
+      if (requestId !== historyRequestRef.current) return
+
+      const threads = Array.isArray(data.threads) ? data.threads : []
+      const userId = currentSession.user?.id
+
+      // Apply ownership filtering when the API supplies user_id.
+      // The backend must filter string-only thread IDs by authenticated user.
+      const ownedThreads = threads.filter((thread) => {
+        if (typeof thread === 'string') return true
+        if (thread?.user_id && userId) return thread.user_id === userId
+        return true
+      })
+
+      const normalizedChats = ownedThreads
+        .map((thread) => ({
+          id: typeof thread === 'string' ? thread : thread.thread_id,
+          title:
+            typeof thread === 'string'
+              ? 'Previous conversation'
+              : thread.title || 'Previous conversation',
+          messages: [],
+        }))
+        .filter((chat) => Boolean(chat.id))
+
+      setChats(normalizedChats)
+
+      // Do not keep a selected conversation that is absent from the new list.
+      setActiveChatId((currentId) => {
+        if (
+          currentId &&
+          !normalizedChats.some((chat) => chat.id === currentId)
+        ) {
+          setMessages([])
+          return null
+        }
+
+        return currentId
+      })
+    } catch (error) {
+      if (requestId === historyRequestRef.current) {
+        console.error('Chat history error:', error)
+        setChats([])
+      }
+    }
+  }
+
+  // Refresh history whenever the authenticated account/session changes.
+  useEffect(() => {
+    if (session?.access_token) {
+      setChats([])
+      setActiveChatId(null)
+      setMessages([])
+      loadChatHistory(session)
+    } else if (!authLoading) {
+      historyRequestRef.current += 1
+      setChats([])
+      setActiveChatId(null)
+      setMessages([])
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token, session?.user?.id, authLoading])
+
+  function startNewChat() {
+    selectedChatRequestRef.current += 1
     setActiveChatId(null)
     setMessages([])
-  }
-}, [session?.access_token, authLoading])
-  function startNewChat() {
-    setActiveChatId(null)
-    setMessages([])
-    setInput('')
-    setAttachments([])
-  }
-  async function selectChat(chat) {
-    setActiveChatId(chat.id)
-    setInput('')
-    setAttachments([])
-    setMessages(chat.messages ?? [])
-    if (!session?.access_token) return
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/threads/${encodeURIComponent(chat.id)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      )
-      if (!response.ok) {
-        throw new Error('Could not restore this conversation')
-      }
-      const data = await response.json()
-      setMessages(data.messages || [])
-    } catch (error) {
-      console.error('Conversation restore error:', error)
-    }
-  }
-  function handleFileSelect(event) {
-  const selectedFiles = Array.from(event.target.files ?? [])
-  const pdfFiles = selectedFiles.filter((file) =>
-    file.name.toLowerCase().endsWith('.pdf')
-  )
-  if (pdfFiles.length !== selectedFiles.length) {
-    alert('Only PDF files are supported currently.')
-  }
-  setAttachments((current) => [...current, ...pdfFiles])
-  event.target.value = ''
-}
-  function removeAttachment(index) {
-    setAttachments((current) =>
-      current.filter((_, currentIndex) => currentIndex !== index),
-    )
-  }
-//   async function handleSubmit(event) {
-//      event.preventDefault()
-//   if (!session?.access_token) {
-//     setShowAuth(true)
-//     return
-//   }
-//   const text = input.trim()
-//   if ((!text && attachments.length === 0) || isLoading) {
-//     return
-//   }
-//   const threadId = activeChatId || crypto.randomUUID()
-//   const filesToUpload = [...attachments]
-//   const userMessage =
-//     text ||
-//     `Please summarize and analyze the uploaded PDF${
-//       filesToUpload.length > 1 ? 's' : ''
-//     }.`
-//   const userEntry = {
-//     id: crypto.randomUUID(),
-//     role: 'user',
-//     content: userMessage,
-//     files: filesToUpload.map((file) => file.name),
-//   }
-//   setActiveChatId(threadId)
-//   setMessages((current) => [...current, userEntry])
-//   setInput('')
-//   setAttachments([])
-//   setIsLoading(true)
-//   try {
-//     // 1. Upload each selected PDF to the backend.
-//     for (const file of filesToUpload) {
-//       const formData = new FormData()
-//       formData.append('thread_id', threadId)
-//       formData.append('file', file)
-//       const uploadResponse = await fetch(
-//         `${API_BASE_URL}/upload-pdf`,
-//         {
-//           method: 'POST',
-//           headers: {
-//             Authorization: `Bearer ${session.access_token}`,
-//           },
-//           body: formData,
-//         }
-//       )
-//       if (!uploadResponse.ok) {
-//         const errorData = await uploadResponse
-//           .json()
-//           .catch(() => ({}))
-//         throw new Error(
-//           errorData.detail || `Failed to upload ${file.name}`
-//         )
-//       }
-//     }
-//     // 2. Send the message to the AI backend.
-//     const response = await fetch(`${API_BASE_URL}/chat`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       Authorization: `Bearer ${session.access_token}`,
-//       },
-//       body: JSON.stringify({
-//         message: userMessage,
-//         thread_id: threadId,
-//       }),
-//     })
-//     const data = await response.json()
-//     if (!response.ok) {
-//       throw new Error(
-//         data.detail || 'The chat request failed.'
-//       )
-//     }
-//     // 3. Display the AI's response.
-//     const assistantMessage = {
-//       id: crypto.randomUUID(),
-//       role: 'assistant',
-//       content: data.response,
-//     }
-//     setMessages((current) => [
-//       ...current,
-//       assistantMessage,
-//     ])
-//     // 4. Save the conversation in the sidebar state.
-//     setChats((current) => {
-//       const existingChat = current.find(
-//         (chat) => chat.id === threadId
-//       )
-//       const updatedChat = {
-//         id: threadId,
-//         title: userMessage.slice(0, 45) || 'New conversation',
-//         messages: [
-//           ...(existingChat?.messages ?? []),
-//           userEntry,
-//           assistantMessage,
-//         ],
-//       }
-//       return existingChat
-//         ? current.map((chat) =>
-//             chat.id === threadId ? updatedChat : chat
-//           )
-//         : [updatedChat, ...current]
-//     })
-//   } catch (error) {
-//     console.error('MultiMind request failed:', error)
-//     setMessages((current) => [
-//       ...current,
-//       {
-//         id: crypto.randomUUID(),
-//         role: 'assistant',
-//         content: `Request failed: ${error.message}. Please try again.`,
-//       },
-//     ])
-//   } finally {
-//     setIsLoading(false)
-//   }
-//   }
-
-
-async function handleSubmit(event) {
-  event.preventDefault()
-
-  if (!session?.access_token) {
-    setShowAuth(true)
-    return
+    setInput('')
+    setAttachments([])
   }
 
-  const text = input.trim()
+  // Restore a conversation from backend history.
+  async function selectChat(chat) {
+    const requestId = ++selectedChatRequestRef.current
 
-  if ((!text && attachments.length === 0) || isLoading) {
-    return
-  }
+    if (!session?.access_token) {
+      setShowAuth(true)
+      return
+    }
 
-  const threadId = activeChatId || crypto.randomUUID()
-  const filesToUpload = [...attachments]
+    setActiveChatId(chat.id)
+    setInput('')
+    setAttachments([])
+    setMessages(chat.messages ?? [])
 
-  const userMessage =
-    text ||
-    `Please summarize and analyze the uploaded PDF${
-      filesToUpload.length > 1 ? 's' : ''
-    }.`
-
-  const userEntry = {
-    id: crypto.randomUUID(),
-    role: 'user',
-    content: userMessage,
-    files: filesToUpload.map((file) => file.name),
-  }
-
-  setActiveChatId(threadId)
-  setMessages((current) => [...current, userEntry])
-  setInput('')
-  setAttachments([])
-  setIsLoading(true)
-
-  let assistantMessageId = null
-  let fullResponse = ''
-
-  try {
-    // 1. Upload selected PDFs (if any).
-    for (const file of filesToUpload) {
-      const formData = new FormData()
-      formData.append('thread_id', threadId)
-      formData.append('file', file)
-
-      const uploadResponse = await fetch(
-        `${API_BASE_URL}/upload-pdf`,
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/threads/${encodeURIComponent(chat.id)}`,
         {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Could not restore this conversation')
+      }
+
+      const data = await response.json()
+
+      // Prevent an older request from overwriting a newer selection.
+      if (requestId !== selectedChatRequestRef.current) return
+
+      setMessages(data.messages || [])
+    } catch (error) {
+      if (requestId === selectedChatRequestRef.current) {
+        console.error('Conversation restore error:', error)
+      }
+    }
+  }
+
+  function handleFileSelect(event) {
+    const selectedFiles = Array.from(event.target.files ?? [])
+
+    const pdfFiles = selectedFiles.filter((file) =>
+      file.name.toLowerCase().endsWith('.pdf')
+    )
+
+    if (pdfFiles.length !== selectedFiles.length) {
+      alert('Only PDF files are supported currently.')
+    }
+
+    setAttachments((current) => [...current, ...pdfFiles])
+    event.target.value = ''
+  }
+
+  function removeAttachment(index) {
+    setAttachments((current) =>
+      current.filter((_, currentIndex) => currentIndex !== index)
+    )
+  }
+
+  // Submit a message and stream the assistant response.
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    if (!session?.access_token) {
+      setShowAuth(true)
+      return
+    }
+
+    const text = input.trim()
+
+    if ((!text && attachments.length === 0) || isLoading) {
+      return
+    }
+
+    const threadId = activeChatId || crypto.randomUUID()
+    const filesToUpload = [...attachments]
+
+    const userMessage =
+      text ||
+      `Please summarize and analyze the uploaded PDF${
+        filesToUpload.length > 1 ? 's' : ''
+      }.`
+
+    const userEntry = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: userMessage,
+      files: filesToUpload.map((file) => file.name),
+    }
+
+    setActiveChatId(threadId)
+    setMessages((current) => [...current, userEntry])
+    setInput('')
+    setAttachments([])
+    setIsLoading(true)
+
+    let assistantMessageId = null
+    let fullResponse = ''
+
+    try {
+      // Upload selected PDFs.
+      for (const file of filesToUpload) {
+        const formData = new FormData()
+        formData.append('thread_id', threadId)
+        formData.append('file', file)
+
+        const uploadResponse = await fetch(`${API_BASE_URL}/upload-pdf`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json().catch(() => ({}))
+
+          throw new Error(
+            errorData.detail || `Failed to upload ${file.name}`
+          )
         }
-      )
-
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse
-          .json()
-          .catch(() => ({}))
-
-        throw new Error(
-          errorData.detail || `Failed to upload ${file.name}`
-        )
       }
-    }
 
-    // 2. Send the message to the streaming backend.
-    const response = await fetch(`${API_BASE_URL}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        message: userMessage,
-        thread_id: threadId,
-      }),
-    })
+      // Send the message to the backend.
+      const response = await fetch(`${API_BASE_URL}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          thread_id: threadId,
+        }),
+      })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(
-        errorData.detail || 'The chat request failed.'
-      )
-    }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || 'The chat request failed.')
+      }
 
-    if (!response.body) {
-      throw new Error('The server did not provide a response stream.')
-    }
+      if (!response.body) {
+        throw new Error('The server did not provide a response stream.')
+      }
 
-    // 3. Create an empty assistant message for live updates.
-    assistantMessageId = crypto.randomUUID()
+      // Add an empty assistant message for live streaming updates.
+      assistantMessageId = crypto.randomUUID()
 
-    setMessages((current) => [
-      ...current,
-      {
+      setMessages((current) => [
+        ...current,
+        {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: '',
+        },
+      ])
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+
+      let buffer = ''
+      let streamFinished = false
+
+      const processEvent = (eventText) => {
+        const dataLine = eventText
+          .split('\n')
+          .find((line) => line.startsWith('data: '))
+
+        if (!dataLine) return
+
+        let eventData
+
+        try {
+          eventData = JSON.parse(dataLine.slice(6))
+        } catch {
+          return
+        }
+
+        if (eventData.type === 'token') {
+          fullResponse += eventData.content || ''
+
+          setMessages((current) =>
+            current.map((message) =>
+              message.id === assistantMessageId
+                ? { ...message, content: fullResponse }
+                : message
+            )
+          )
+        } else if (eventData.type === 'done') {
+          streamFinished = true
+        } else if (eventData.type === 'error') {
+          throw new Error(
+            eventData.content || 'The chat request failed.'
+          )
+        }
+      }
+
+      // Read the server-sent event stream.
+      while (true) {
+        const { value, done } = await reader.read()
+
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+
+        const events = buffer.split('\n\n')
+        buffer = events.pop() || ''
+
+        for (const eventText of events) {
+          processEvent(eventText)
+        }
+      }
+
+      // Process any final buffered data.
+      buffer += decoder.decode()
+
+      if (buffer.trim()) {
+        processEvent(buffer)
+      }
+
+      if (!streamFinished) {
+        throw new Error('The response stream ended unexpectedly.')
+      }
+
+      if (!fullResponse.trim()) {
+        throw new Error('The assistant returned an empty response.')
+      }
+
+      // Update the sidebar with the completed conversation.
+      const assistantMessage = {
         id: assistantMessageId,
         role: 'assistant',
-        content: '',
-      },
-    ])
-
-    // 4. Read and parse the server-sent events.
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-    let streamFinished = false
-
-    const processEvent = (eventText) => {
-      const dataLine = eventText
-        .split('\n')
-        .find((line) => line.startsWith('data: '))
-
-      if (!dataLine) return
-
-      let eventData
-
-      try {
-        eventData = JSON.parse(dataLine.slice(6))
-      } catch {
-        return
+        content: fullResponse,
       }
 
-      if (eventData.type === 'token') {
-        fullResponse += eventData.content || ''
+      setChats((current) => {
+        const existingChat = current.find((chat) => chat.id === threadId)
 
+        const updatedChat = {
+          id: threadId,
+          title:
+            existingChat?.title ||
+            userMessage.slice(0, 45) ||
+            'New conversation',
+          messages: [
+            ...(existingChat?.messages ?? []),
+            userEntry,
+            assistantMessage,
+          ],
+        }
+
+        return existingChat
+          ? current.map((chat) =>
+              chat.id === threadId ? updatedChat : chat
+            )
+          : [updatedChat, ...current]
+      })
+    } catch (error) {
+      console.error('MultiMind request failed:', error)
+
+      // Remove an incomplete assistant response if streaming failed.
+      if (assistantMessageId) {
         setMessages((current) =>
-          current.map((message) =>
-            message.id === assistantMessageId
-              ? { ...message, content: fullResponse }
-              : message
-          )
-        )
-      } else if (eventData.type === 'done') {
-        streamFinished = true
-      } else if (eventData.type === 'error') {
-        throw new Error(
-          eventData.content || 'The chat request failed.'
+          current.filter((message) => message.id !== assistantMessageId)
         )
       }
+
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: `Request failed: ${error.message}. Please try again.`,
+        },
+      ])
+    } finally {
+      setIsLoading(false)
     }
-
-    while (true) {
-      const { value, done } = await reader.read()
-
-      if (done) break
-
-      buffer += decoder.decode(value, { stream: true })
-
-      const events = buffer.split('\n\n')
-      buffer = events.pop() || ''
-
-      for (const eventText of events) {
-        processEvent(eventText)
-      }
-    }
-
-    // Process any final buffered data.
-    buffer += decoder.decode()
-
-    if (buffer.trim()) {
-      processEvent(buffer)
-    }
-
-    if (!streamFinished) {
-      throw new Error('The response stream ended unexpectedly.')
-    }
-
-    if (!fullResponse.trim()) {
-      throw new Error('The assistant returned an empty response.')
-    }
-
-    // 5. Save the completed conversation in the sidebar.
-    const assistantMessage = {
-      id: assistantMessageId,
-      role: 'assistant',
-      content: fullResponse,
-    }
-
-    setChats((current) => {
-      const existingChat = current.find(
-        (chat) => chat.id === threadId
-      )
-
-      const updatedChat = {
-        id: threadId,
-        title: userMessage.slice(0, 45) || 'New conversation',
-        messages: [
-          ...(existingChat?.messages ?? []),
-          userEntry,
-          assistantMessage,
-        ],
-      }
-
-      return existingChat
-        ? current.map((chat) =>
-            chat.id === threadId ? updatedChat : chat
-          )
-        : [updatedChat, ...current]
-    })
-  } catch (error) {
-    console.error('MultiMind request failed:', error)
-
-    // Remove an incomplete assistant response if streaming failed.
-    if (assistantMessageId) {
-      setMessages((current) =>
-        current.filter(
-          (message) => message.id !== assistantMessageId
-        )
-      )
-    }
-
-    setMessages((current) => [
-      ...current,
-      {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: `Request failed: ${error.message}. Please try again.`,
-      },
-    ])
-  } finally {
-    setIsLoading(false)
   }
+
+  if (authLoading) {
+    return <div className="app-shell">Loading...</div>
+  }
+
+  return (
+    <div className="app-shell">
+      {sidebarOpen && (
+        <aside className="sidebar">
+          <div className="sidebar-header">
+            <button
+              className="brand"
+              type="button"
+              onClick={startNewChat}
+              aria-label="MultiMind home"
+            >
+              <span className="brand-mark">M</span>
+              <span>MultiMind</span>
+            </button>
+
+            <button
+              className="icon-button sidebar-close"
+              type="button"
+              aria-label="Close sidebar"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3.5" y="4" width="17" height="16" rx="2" />
+                <path d="M9 4v16" />
+              </svg>
+            </button>
+          </div>
+
+          <button
+            className="new-chat-button"
+            type="button"
+            onClick={startNewChat}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>New chat</span>
+          </button>
+
+          <div className="chat-history">
+            <p className="sidebar-label">Your conversations</p>
+
+            {chats.length === 0 ? (
+              <div className="empty-history">
+                <span className="history-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
+                  </svg>
+                </span>
+                <p>Your conversations will appear here.</p>
+              </div>
+            ) : (
+              <div className="chat-list">
+                {chats.map((chat) => (
+                  <button
+                    className={`chat-list-item ${
+                      activeChatId === chat.id ? 'active' : ''
+                    }`}
+                    key={chat.id}
+                    type="button"
+                    onClick={() => selectChat(chat)}
+                    title={chat.title}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
+                    </svg>
+                    <span>{chat.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="sidebar-footer">
+            <div className="user-avatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="3.5" />
+                <path d="M5 20a7 7 0 0 1 14 0" />
+              </svg>
+            </div>
+
+            <div className="user-details">
+              <strong>
+                {session?.user?.email ? 'My account' : 'Guest'}
+              </strong>
+              <span>
+                {session?.user?.email || 'Sign in to get started'}
+              </span>
+            </div>
+
+            <button
+              className="icon-button account-menu-button"
+              type="button"
+              aria-label="Account options"
+              onClick={() => setShowAuth(true)}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="5" cy="12" r="1" />
+                <circle cx="12" cy="12" r="1" />
+                <circle cx="19" cy="12" r="1" />
+              </svg>
+            </button>
+          </div>
+        </aside>
+      )}
+
+      <main className="main-panel">
+        <header className="topbar">
+          <div className="topbar-left">
+            {!sidebarOpen && (
+              <button
+                className="icon-button"
+                type="button"
+                aria-label="Open sidebar"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3.5" y="4" width="17" height="16" rx="2" />
+                  <path d="M9 4v16" />
+                </svg>
+              </button>
+            )}
+
+            <div className="model-indicator">
+              <span className="status-dot" />
+              <span>MultiMind AI</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 10 4 4 4-4" />
+              </svg>
+            </div>
+          </div>
+
+          <button
+            className="login-button"
+            type="button"
+            onClick={() => setShowAuth(true)}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <path d="M10 17l5-5-5-5M15 12H3" />
+            </svg>
+            <span>{session?.user?.email || 'Log in / Sign up'}</span>
+          </button>
+        </header>
+
+        <section className="conversation">
+          {messages.length === 0 ? (
+            <div className="welcome">
+              <div className="welcome-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48">
+                  <path d="M24 4 28.5 18.5 43 23l-14.5 4.5L24 42l-4.5-14.5L5 23l14.5-4.5L24 4Z" />
+                  <path d="m39 31 2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6Z" />
+                </svg>
+              </div>
+
+              <p className="welcome-eyebrow">YOUR PERSONAL AI WORKSPACE</p>
+              <h1>What can I help you with?</h1>
+
+              <p className="welcome-description">
+                Ask questions, explore ideas, work with documents,
+                and get things done in one place.
+              </p>
+
+              <div className="suggestion-grid">
+                <button
+                  className="suggestion-card"
+                  type="button"
+                  onClick={() => setInput('')}
+                >
+                  <span className="suggestion-icon learn-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+                      <path d="m6 10 6 3 6-3M5 12v5l7 4 7-4v-5" />
+                    </svg>
+                  </span>
+
+                  <span className="suggestion-text">
+                    <strong>Learn something</strong>
+                    <small>Understand topics step by step</small>
+                  </span>
+
+                  <span className="suggestion-arrow">↗</span>
+                </button>
+
+                <button
+                  className="suggestion-card"
+                  type="button"
+                  onClick={() => setInput('')}
+                >
+                  <span className="suggestion-icon code-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+                    </svg>
+                  </span>
+
+                  <span className="suggestion-text">
+                    <strong>Code and create</strong>
+                    <small>Build projects and debug code</small>
+                  </span>
+
+                  <span className="suggestion-arrow">↗</span>
+                </button>
+
+                <button
+                  className="suggestion-card"
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <span className="suggestion-icon document-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10Z" />
+                      <path d="M13 3v7h7M8 14h8M8 17h8" />
+                    </svg>
+                  </span>
+
+                  <span className="suggestion-text">
+                    <strong>Explore documents</strong>
+                    <small>Prepare a file for analysis</small>
+                  </span>
+
+                  <span className="suggestion-arrow">↗</span>
+                </button>
+
+                <button
+                  className="suggestion-card"
+                  type="button"
+                  onClick={() => setInput('')}
+                >
+                  <span className="suggestion-icon research-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="10.5" cy="10.5" r="6.5" />
+                      <path d="m16 16 5 5M8 10.5h5M10.5 8v5" />
+                    </svg>
+                  </span>
+
+                  <span className="suggestion-text">
+                    <strong>Research and explore</strong>
+                    <small>Investigate ideas and questions</small>
+                  </span>
+
+                  <span className="suggestion-arrow">↗</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="message-list">
+              {messages.map((message) => (
+                <article
+                  className={`message ${message.role}`}
+                  key={message.id}
+                >
+                  <div className="message-avatar">
+                    {message.role === 'user' ? 'U' : 'M'}
+                  </div>
+
+                  <div className="message-content">
+                    <strong>
+                      {message.role === 'user' ? 'You' : 'MultiMind'}
+                    </strong>
+
+                    {message.content && <p>{message.content}</p>}
+
+                    {message.files?.map((file, index) => (
+                      <div
+                        className="attached-file"
+                        key={`${file}-${index}`}
+                      >
+                        <span>↗</span>
+                        {file}
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ))}
+
+              {isLoading && (
+                <div className="loading-indicator" role="status">
+                  <span className="loading-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  MultiMind is thinking...
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        <footer className="composer-area">
+          <form className="composer" onSubmit={handleSubmit}>
+            {attachments.length > 0 && (
+              <div className="attachment-list">
+                {attachments.map((file, index) => (
+                  <div
+                    className="attachment-chip"
+                    key={`${file.name}-${file.size}-${index}`}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" />
+                      <path d="M14 3v6h6" />
+                    </svg>
+
+                    <span title={file.name}>{file.name}</span>
+
+                    <button
+                      type="button"
+                      aria-label={`Remove ${file.name}`}
+                      onClick={() => removeAttachment(index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <textarea
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault()
+                  event.currentTarget.form.requestSubmit()
+                }
+              }}
+              placeholder="Message MultiMind..."
+              aria-label="Message MultiMind"
+              rows={2}
+            />
+
+            <div className="composer-toolbar">
+              <div className="composer-tools">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  hidden
+                  accept=".pdf,application/pdf"
+                  onChange={handleFileSelect}
+                />
+
+                <button
+                  className="attach-button"
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  <span>Attach files</span>
+                </button>
+              </div>
+
+              <button
+                className="send-button"
+                type="submit"
+                disabled={
+                  isLoading ||
+                  (!input.trim() && attachments.length === 0)
+                }
+                aria-label="Send message"
+                title="Send message"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+              </button>
+            </div>
+          </form>
+
+          <p className="disclaimer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 11v5M12 8h.01" />
+            </svg>
+            AI can make mistakes. Verify important information.
+          </p>
+        </footer>
+      </main>
+
+      {showAuth && (
+        <div
+          className="auth-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowAuth(false)
+            }
+          }}
+        >
+          <div
+            className="auth-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Log in or sign up"
+          >
+            <button
+              type="button"
+              className="auth-close"
+              aria-label="Close authentication"
+              onClick={() => setShowAuth(false)}
+            >
+              ×
+            </button>
+
+            <Auth />
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
-  return (
-
-    <div className="app-shell">
-      {sidebarOpen && (
-        <aside className="sidebar">
-          <div className="sidebar-header">
-            <button
-              className="brand"
-              type="button"
-              onClick={startNewChat}
-              aria-label="MultiMind home"
-            >
-              <span className="brand-mark">M</span>
-              <span>MultiMind</span>
-            </button>
-            <button
-              className="icon-button sidebar-close"
-              type="button"
-              aria-label="Close sidebar"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3.5" y="4" width="17" height="16" rx="2" />
-                <path d="M9 4v16" />
-              </svg>
-            </button>
-          </div>
-          <button
-            className="new-chat-button"
-            type="button"
-            onClick={startNewChat}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true"> // dont read this&#x20;
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            <span>New chat</span>
-          </button>
-          <div className="chat-history">
-            <p className="sidebar-label">Your conversations</p>
-            {chats.length === 0 ? (
-              <div className="empty-history">
-                <span className="history-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
-                  </svg>
-                </span>
-                <p>Your conversations will appear here.</p>
-              </div>
-            ) : (
-              <div className="chat-list">
-                {chats.map((chat) => (
-                  <button
-                    className={`chat-list-item ${
-                      activeChatId === chat.id ? 'active' : ''
-                    }`}
-                    key={chat.id}
-                    type="button"
-                    onClick={() => selectChat(chat)}
-                    title={chat.title}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.6A7.5 7.5 0 1 1 20 11.5Z" />
-                    </svg>
-                    <span>{chat.title}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="sidebar-footer">
-            <div className="user-avatar" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="3.5" />
-                <path d="M5 20a7 7 0 0 1 14 0" />
-              </svg>
-            </div>
-          <div className="user-details">
-            <strong>
-              {session?.user?.email ? 'My account' : 'Guest'}
-            </strong>
-            <span>
-              {session?.user?.email || 'Sign in to get started'}
-            </span>
-          </div>
-            <button
-              className="icon-button account-menu-button"
-              type="button"
-              aria-label="Account options"
-              onClick={() => setShowAuth(true)}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="5" cy="12" r="1" />
-                <circle cx="12" cy="12" r="1" />
-                <circle cx="19" cy="12" r="1" />
-              </svg>
-            </button>
-          </div>
-        </aside>
-      )}
-      <main className="main-panel">
-        <header className="topbar">
-          <div className="topbar-left">
-            {!sidebarOpen && (
-              <button
-                className="icon-button"
-                type="button"
-                aria-label="Open sidebar"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3.5" y="4" width="17" height="16" rx="2" />
-                  <path d="M9 4v16" />
-                </svg>
-              </button>
-            )}
-            <div className="model-indicator">
-              <span className="status-dot" />
-              <span>MultiMind AI</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m8 10 4 4 4-4" />
-              </svg>
-            </div>
-          </div>
-          <button
-            className="login-button"
-            type="button"
-            onClick={() => setShowAuth(true)}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-              <path d="M10 17l5-5-5-5M15 12H3" />
-            </svg>
-            <span>
-              {session?.user?.email || 'Log in / Sign up'}
-            </span>
-          </button>
-        </header>
-        <section className="conversation">
-          {messages.length === 0 ? (
-            <div className="welcome">
-              <div className="welcome-icon" aria-hidden="true">
-                <svg viewBox="0 0 48 48">
-                  <path d="M24 4 28.5 18.5 43 23l-14.5 4.5L24 42l-4.5-14.5L5 23l14.5-4.5L24 4Z" />
-                  <path d="m39 31 2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6Z" />
-                </svg>
-              </div>
-              <p className="welcome-eyebrow">YOUR PERSONAL AI WORKSPACE</p>
-              <h1>What can I help you with?</h1>
-              <p className="welcome-description">
-                Ask questions, explore ideas, work with documents,
-                and get things done in one place.
-              </p>
-              <div className="suggestion-grid">
-                <button
-                  className="suggestion-card"
-                  type="button"
-                  onClick={() => setInput('')}
-                >
-                  <span className="suggestion-icon learn-icon">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M12 3 3 8l9 5 9-5-9-5Z" />
-                      <path d="m6 10 6 3 6-3M5 12v5l7 4 7-4v-5" />
-                    </svg>
-                  </span>
-                  <span className="suggestion-text">
-                    <strong>Learn something</strong>
-                    <small>Understand topics step by step</small>
-                  </span>
-                  <span className="suggestion-arrow">↗</span>
-                </button>
-                <button
-                  className="suggestion-card"
-                  type="button"
-                  onClick={() => setInput('')}
-                >
-                  <span className="suggestion-icon code-icon">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
-                    </svg>
-                  </span>
-                  <span className="suggestion-text">
-                    <strong>Code and create</strong>
-                    <small>Build projects and debug code</small>
-                  </span>
-                  <span className="suggestion-arrow">↗</span>
-                </button>
-                <button
-                  className="suggestion-card"
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <span className="suggestion-icon document-icon">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10Z" />
-                      <path d="M13 3v7h7M8 14h8M8 17h8" />
-                    </svg>
-                  </span>
-                  <span className="suggestion-text">
-                    <strong>Explore documents</strong>
-                    <small>Prepare a file for analysis</small>
-                  </span>
-                  <span className="suggestion-arrow">↗</span>
-                </button>
-                <button
-                  className="suggestion-card"
-                  type="button"
-                  onClick={() => setInput('')}
-                >
-                  <span className="suggestion-icon research-icon">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <circle cx="10.5" cy="10.5" r="6.5" />
-                      <path d="m16 16 5 5M8 10.5h5M10.5 8v5" />
-                    </svg>
-                  </span>
-                  <span className="suggestion-text">
-                    <strong>Research and explore</strong>
-                    <small>Investigate ideas and questions</small>
-                  </span>
-                  <span className="suggestion-arrow">↗</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="message-list">
-              {messages.map((message) => (
-                <article
-                  className={`message ${message.role}`}
-                  key={message.id}
-                >
-                  <div className="message-avatar">
-                    {message.role === 'user' ? 'U' : 'M'}
-                  </div>
-                  <div className="message-content">
-                    <strong>
-                      {message.role === 'user' ? 'You' : 'MultiMind'}
-                    </strong>
-                    {message.content && <p>{message.content}</p>}
-                    {message.files?.map((file, index) => (
-                      <div className="attached-file" key={`${file}-${index}`}>
-                        <span>↗</span>
-                        {file}
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ))}
-              {isLoading && (
-                <div className="loading-indicator" role="status">
-                  <span className="loading-dots"><i /><i /><i /></span>
-                  MultiMind is thinking...
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-        <footer className="composer-area">
-          <form className="composer" onSubmit={handleSubmit}>
-            {attachments.length > 0 && (
-              <div className="attachment-list">
-                {attachments.map((file, index) => (
-                  <div
-                    className="attachment-chip"
-                    key={`${file.name}-${file.size}-${index}`}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" />
-                      <path d="M14 3v6h6" />
-                    </svg>
-                    <span title={file.name}>{file.name}</span>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${file.name}`}
-                      onClick={() => removeAttachment(index)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <textarea
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (
-                  event.key === 'Enter' &&
-                  !event.shiftKey &&
-                  !event.nativeEvent.isComposing
-                ) {
-                  event.preventDefault()
-                  event.currentTarget.form.requestSubmit()
-                }
-              }}
-              placeholder="Message MultiMind..."
-              aria-label="Message MultiMind"
-              rows={2}
-            />
-            <div className="composer-toolbar">
-              <div className="composer-tools">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  hidden
-                  accept=".pdf,application/pdf"
-                  onChange={handleFileSelect}
-                />
-                <button
-                  className="attach-button"
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                  <span>Attach files</span>
-                </button>
-              </div>
-              <button
-                className="send-button"
-                type="submit"
-                disabled={
-                  isLoading ||
-                  (!input.trim() && attachments.length === 0)
-                }
-                aria-label="Send message"
-                title="Send message"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 19V5M5 12l7-7 7 7" />
-                </svg>
-              </button>
-            </div>
-          </form>
-          <p className="disclaimer">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 11v5M12 8h.01" />
-            </svg>
-            AI can make mistakes. Verify important information.
-          </p>
-        </footer>
-      </main>
-      {showAuth && (
-        <div
-          className="auth-overlay"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setShowAuth(false)
-            }
-          }}
-        >
-          <div
-            className="auth-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Log in or sign up"
-          >
-            <button
-              type="button"
-              className="auth-close"
-              aria-label="Close authentication"
-              onClick={() => setShowAuth(false)}
-            >
-              ×
-            </button>
-            <Auth />
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
 export default App
