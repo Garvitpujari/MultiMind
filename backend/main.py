@@ -38,12 +38,12 @@ SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SE
 
 
 def get_authenticated_user(authorization: str | None):
-    if not authorization or not authorization.startswith("Bearer "):
+    if not authorization or not authorization.startswith("Bearer "): # check authorization header of supabase
         raise HTTPException(status_code=401, detail="Please log in.")
 
     token = authorization.split(" ", 1)[1]
 
-    response = requests.get(
+    response = requests.get( #backend sends a GET request to supabase to verify the token and get the user id
         f"{SUPABASE_URL}/auth/v1/user",
         headers={
             "apikey": SUPABASE_SECRET_KEY,
@@ -207,7 +207,7 @@ def ingest_pdf(file_bytes: bytes, thread_id: str, filename: Optional[str] = None
         print(f"[PDF] Generated {len(vectors)} embeddings.", flush=True)
 
         chunk_ids = [
-            hashlib.sha256(f"{thread_id}:{document_id}:{i}".encode()).hexdigest()
+            hashlib.sha256(f"{thread_id}:{document_id}:{i}".encode()).hexdigest() #unique ID for every chunk o
             for i in range(len(chunks))
         ]
 
@@ -515,7 +515,7 @@ async def chat(chat_request: ChatRequest, request: Request):
         result = await request.app.state.chatbot.ainvoke(
             {"messages": [HumanMessage(content=chat_request.message)]}, config=config
         )
-        return {"thread_id": chat_request.thread_id, "response": result["messages"][-1].content}
+        return {"thread_id": chat_requcest.thread_id, "response": result["messages"][-1].content}
     except Exception as exc:
         print(f"[CHAT ERROR] {type(exc).__name__}: {exc}", flush=True)
         raise HTTPException(status_code=500, detail="Unable to process your message. Check Render logs.") from exc
