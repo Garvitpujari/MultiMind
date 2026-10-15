@@ -1264,7 +1264,7 @@ async def lifespan(app: FastAPI):
         raise RuntimeError("DATABASE_URL is missing.")
 
     async with AsyncPostgresSaver.from_conn_string(
-        normalize_database_url(database_url)
+        database_url
     ) as checkpointer:
         await checkpointer.setup()
         app.state.checkpointer = checkpointer
